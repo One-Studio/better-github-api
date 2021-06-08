@@ -1,34 +1,144 @@
 # better-github-api
 
-> 待定 by Purp1e
+> 未完成 by Purp1e
 
 ## 简介
 
-github release、archive以及项目文件的加速项目，支持clone，有Cloudflare Workers无服务器版本以及Python版本
+基于gh-proxy和cloudflare workers提供github的更好的Serverless API服务，简单易用开销低，速度有保障（CDN）。
 
-## 演示
+----
 
-[https://gh.api.99988866.xyz/](https://gh.api.99988866.xyz/)
+以下是设计草稿，非最终版
 
-演示站为公共服务，如有大规模使用需求请自行部署，演示站有点不堪重负
+# CloudFlare Workers API设计
 
-![imagea272c95887343279.png](https://img.maocdn.cn/img/2021/04/24/imagea272c95887343279.png)
+- 获取KV值
 
-当然也欢迎[捐赠](#捐赠)以支持作者
+```
+const value = await FIRST_KV_NAMESPACE.get("first-key")
+```
 
-## python版本和cf worker版本差异
+- 设置键值
 
-- python版本支持进行文件大小限制，超过设定返回原地址 [issue #8](https://github.com/hunshcn/gh-proxy/issues/8)
+```
+await NAMESPACE.put(key, value)
+```
+
+## 访问API
+
+| 键                                                           | 含义                         |
+| ------------------------------------------------------------ | ---------------------------- |
+| repo                                                         | 从github仓库获取             |
+| bucket（想法是定时让CF去取地址放在键值对里，用bucket秒获得链接，不用解析github api，不知道有无弊端，最后实现） | 获取已缓存到KV的附件、版本号 |
+| get                                                          | 实时获取KV对应的附件、版本号 |
+
+- 后面跟version获取版本号，不跟则获取最新版本下载地址。
+- 最后一个字段过滤解决多个附件的情况，用 `%` 分隔 include%exclude%start%end，如 `hlae%%%.zip` 代表包含hlae、结尾是.zip的附件。
+
+| API示例                                    | 含义               |
+| ------------------------------------------ | ------------------ |
+| /repo/advancedfx/advancedfx/`版本号`       |                    |
+| /repo/advancedfx/advancedfx/`版本号`/      |                    |
+| /repo/advancedfx/advancedfx/latest/version |                    |
+| /repo/advancedfx/advancedfx/latest/hlae%   |                    |
+| /repo/advancedfx/advancedfx/latest/source  |                    |
+| /bucket                                    | 获取所有bucket信息 |
+| /bucket/hlae                               | 获取hlae最新安装包 |
+| /bucket/hlae/version                       |                    |
+| /bucket/ffmpeg/win/                        |                    |
+| /bucket/ffmpeg/win/                        |                    |
+| /get/hlae                                  |                    |
+
+```
+https://api.upup.cool/get/hlae
+https://github.com/仓库名/archive/refs/tags/版本号.zip
+```
+
+## 键值对值的设计
+
+> Json格式
+
+| 键      | 含义       | 例                    |
+| ------- | ---------- | --------------------- |
+| repo    | 仓库名     | advancedfx/advancedfx |
+| include | 包含字符串 | hlae                  |
+| exclude | 排除字符串 |                       |
+| start   | 开头字符串 |                       |
+| end     | 结尾字符串 | .zip                  |
+
+/hlae%%%.zip  %分隔
+
+若只有repo仓库名且只有一个附件直接返回这个附件
+
+## 键值对内容
+
+| 键             | 值                                                 |
+| -------------- | -------------------------------------------------- |
+| hlae           | advancedfx/advancedfx  hlae%%%.zip                 |
+| hlae-installer | advancedfx/advancedfx  HLAE_Setup.exe              |
+| csdm           | akiver/CSGO-Demos-Manager  csgo-demos-manager .exe |
+| ffmpeg-mac     |                                                    |
+| ffmpeg-mac     |                                                    |
+| ffmpeg-linux   |                                                    |
+| ffmpeg-linux   |                                                    |
+| ffmpeg-win     |                                                    |
+| ffmpeg-win     |                                                    |
+| x264           |                                                    |
+| x265           |                                                    |
+| one-encoder    |                                                    |
+|                |                                                    |
+
+| ffmpeg | arch 默认amd64   | 默认git | win64特有 默认full |
+| ------ | ---------------- | ------- | ------------------ |
+| Win    | Amd64            | git     | Full               |
+|        | Arm64            | release | Essentials         |
+|        |                  |         |                    |
+| Mac    | Amd64            | git     |                    |
+|        | Arm64 (暂时没有) | release |                    |
+|        |                  |         |                    |
+| Linux  | Amd64            | git     | 无                 |
+|        | I686             | release |                    |
+|        | Arm64            |         |                    |
+|        | Armhf            |         |                    |
+|        | Armel            |         |                    |
+|        |                  |         |                    |
+
+```
+https://api.upup.cool/get/ffmpeg/win
+https://api.upup.cool/get/ffmpeg/win/amd64/git
+https://api.upup.cool/get/ffmpeg/mac
+https://api.upup.cool/get/ffmpeg/mac/amd64/git
+https://api.upup.cool/get/ffmpeg/mac/arm64/git
+https://api.upup.cool/get/ffmpeg/linux/amd64/git
+https://api.upup.cool/get/ffmpeg/amd/amd/release
+```
+
+| X264           |            |      |      |
+| -------------- | ---------- | ---- | ---- |
+| win64          | amd64      |      |      |
+| win32          | Ia32       |      |      |
+| debian-amd64   |            |      |      |
+| debian-aarch64 |            |      |      |
+| macos-arm64    |            |      |      |
+| macos-x86_64   | amd64      |      |      |
+| macos          | 可能是ia32 |      |      |
+|                |            |      |      |
+
+```
+https://api.upup.cool/get/x264/win/amd64
+https://api.upup.cool/get/x264/win/ia32
+https://api.upup.cool/get/x264/debian/amd64
+https://api.upup.cool/get/x264/debian/aarch64
+https://api.upup.cool/get/x264/mac/amd64
+```
+
+
+
+----
+
+以下是原项目的相关内容
 
 ## 使用
-
-直接在copy出来的url前加`https://gh.api.99988866.xyz/`即可
-
-也可以直接访问，在input输入
-
-***大量使用请自行部署，以上域名仅为演示使用。***
-
-以下都是合法输入（仅示例，文件不存在）：
 
 - 分支源码：https://github.com/hunshcn/project/archive/master.zip
 - release源码：https://github.com/hunshcn/project/archive/v0.1.0.tar.gz
@@ -51,57 +161,14 @@ github release、archive以及项目文件的加速项目，支持clone，有Clo
 
 `PREFIX`是前缀，默认（根路径情况为"/"），如果自定义路由为example.com/gh/*，请将PREFIX改为 '/gh/'，注意，少一个杠都会错！
 
-## Python版本部署
-
-### Docker部署
-
-```
-docker run -d --name="gh-proxy-py" \
-  -p 0.0.0.0:80:80 \
-  --restart=always \
-  hunsh/gh-proxy-py:latest
-```
-
-第一个80是你要暴露出去的端口
-
-### 直接部署
-
-安装依赖（请使用python3）
-
-```pip install flask requests```
-
-按需求修改`app/main.py`的前几项配置
-
-### 注意
-
-python版本的机器如果无法正常访问github.io会启动报错，请自行修改静态文件url
-
-workers版本默认配置下clone走github.com.cnpmjs.org，项目文件会走jsDeliver，如需走服务器，修改配置即可
-
-python版本默认走服务器（2021.3.27更新）
-
 ## Cloudflare Workers计费
 
 到 `overview` 页面可参看使用情况。免费版每天有 10 万次免费请求，并且有每分钟1000次请求的限制。
 
 如果不够用，可升级到 $5 的高级版本，每月可用 1000 万次请求（超出部分 $0.5/百万次请求）。
 
-## Changelog
-
-* 2020.04.10 增加对`raw.githubusercontent.com`文件的支持
-* 2020.04.09 增加Python版本（使用Flask）
-* 2020.03.23 新增了clone的支持
-* 2020.03.22 初始版本
-
 ## 链接
-
-[我的博客](https://hunsh.net)
 
 ## 参考
 
-[jsproxy](https://github.com/EtherDream/jsproxy/)
-
 ## 捐赠
-
-![wx.png](https://img.maocdn.cn/img/2021/04/24/image.md.png)
-![ali.png](https://www.helloimg.com/images/2021/04/24/BK9vmb.md.png)
