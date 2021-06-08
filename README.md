@@ -10,6 +10,10 @@
 
 以下是设计草稿，非最终版
 
+cdn.js是原项目单纯的加速功能
+
+api.js是本项目的核心
+
 # CloudFlare Workers API设计
 
 - 获取KV值
