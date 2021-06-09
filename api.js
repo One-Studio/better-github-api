@@ -193,6 +193,100 @@ async function proxy(urlObj, reqInit, rawLen) {
 //////////////////////////////////////////
 
 /**
+ * 列出当前的键值对信息
+ * @param {Request} request
+ * @param pathname
+ * @returns {Promise<Response>}
+ */
+async function list(request, pathname) {
+  return fetch(
+      // 列举BUCKET所有键值对
+      "https://upup.cool"
+  );
+}
+
+/**
+ * 访问GitHub仓库信息
+ * @param {Request} request
+ * @param pathname
+ * @returns {Promise<Response>}
+ */
+async function repo(request, pathname) {
+  // 路径分隔后0是域名 1=repo/get/bucket 2=...
+  const strs = pathname.split("/");
+
+  if (strs.length < 5) {
+    return new Response("invalid input for repo api.");
+  }
+
+  let owner, repo, version, req;
+  owner = strs[2];
+  repo = strs[3];
+  version = strs[4];
+  req = "https://api.github.com/repos/" + owner + "/" + repo + "/releases";
+
+  if (version === "latest") {
+    req += "/latest";
+  } else {
+    req += "/tag/" + version;
+  }
+
+  //获得release信息
+  const resp = await fetch(req, {
+    headers: {
+      accept: "application/json",
+      "Content-Type": "application/json",
+      "user-agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36",
+    },
+  }).then((response) => response.json()); // 解析结果为JSON
+
+  //版本号
+  const tag = resp.tag_name;
+  const assets = resp.assets;
+
+  if (assets.length === 1) {
+    // return Response.redirect(cdn + assets[0].browser_download_url, 302);
+    return cdnHandler(request, assets[0].browser_download_url);
+  }
+
+  return new Response(resp.tag_name);
+}
+
+/**
+ * 使用KV键值对的简写访问仓库信息
+ * @param {Request} request
+ * @param pathname
+ * @returns {Promise<Response>}
+ */
+async function get(request, pathname) {
+
+  return  fetch("");
+}
+
+/**
+ * 获取已缓存的最新版本信息
+ * @param {Request} request
+ * @param pathname
+ * @returns {Promise<Response>}
+ */
+async function bucket(request, pathname) {
+
+  return  fetch("");
+}
+
+/**
+ * 提交get的快速键值对，需要Auth认证
+ * @param {Request} request
+ * @param pathname
+ * @returns {Promise<Response>}
+ */
+async function submit(request, pathname) {
+
+  return  fetch("");
+}
+
+/**
  * 请求处理的主体
  * @param {Request} request
  * @returns {Promise<Response>}
@@ -200,7 +294,7 @@ async function proxy(urlObj, reqInit, rawLen) {
 async function handleRequest(request) {
   const { pathname } = new URL(request.url);
 
-  //返回主页
+  //空请求返回主页
   if (pathname === '' || pathname === '/') {
     return fetch(
         "https://upup.cool"
@@ -209,73 +303,27 @@ async function handleRequest(request) {
 
   //列出当前的键值对信息
   if (pathname.startsWith("/list")) {
-    return fetch(
-        "https://github.com/advancedfx/advancedfx/releases/download/v2.116.0/hlae_2_116_0.zip"
-    );
+    return list(request, pathname.replace("/list",""))
   }
 
-  // 自定义
+  //访问GitHub仓库信息
   if (pathname.startsWith("/repo")) {
-    // 路径分隔后0是域名 1=repo/get/bucket 2=...
-    var strs = pathname.split("/");
-
-    if (strs.length < 5) {
-      return new Response("invalid input for repo api.");
-    }
-
-    var owner, repo, version, req;
-    owner = strs[2];
-    repo = strs[3];
-    version = strs[4];
-    req = "https://api.github.com/repos/" + owner + "/" + repo + "/releases";
-
-    if (version === "latest") {
-      req += "/latest";
-    } else {
-      req += "/tag/" + version;
-    }
-
-    //获得release信息
-    const resp = await fetch(req, {
-      headers: {
-        accept: "application/json",
-        "Content-Type": "application/json",
-        "user-agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36",
-      },
-    }).then((response) => response.json()); // 解析结果为JSON
-
-    //版本号
-    const tag = resp.tag_name;
-    const assets = resp.assets;
-
-    if (assets.length === 1) {
-      // return Response.redirect(cdn + assets[0].browser_download_url, 302);
-      return cdnHandler(request, assets[0].browser_download_url);
-    }
-
-    return new Response(resp.tag_name);
+    return repo(request, pathname.replace("/repo",""))
   }
 
-  //测试返回链接
+  //使用KV键值对的简写访问仓库信息
   if (pathname.startsWith("/get")) {
-    return fetch(
-        "https://github.com/advancedfx/advancedfx/releases/download/v2.116.0/hlae_2_116_0.zip"
-    );
+    return get(request, pathname.replace("/get",""))
   }
 
   //获取已缓存的最新版本信息
   if (pathname.startsWith("/bucket")) {
-    return fetch(
-        "https://github.com/advancedfx/advancedfx/releases/download/v2.116.0/hlae_2_116_0.zip"
-    );
+    return bucket(request, pathname.replace("/bucket",""))
   }
 
   //提交get的快速键值对，需要Auth认证
   if (pathname.startsWith("/submit")) {
-    return fetch(
-        "https://github.com/advancedfx/advancedfx/releases/download/v2.116.0/hlae_2_116_0.zip"
-    );
+    return submit(request, pathname.replace("/submit",""))
   }
 
   return fetch(
