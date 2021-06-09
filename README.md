@@ -143,6 +143,10 @@ https://api.upup.cool/get/hlae
 https://github.com/仓库名/archive/refs/tags/版本号.zip  //source下载
 ```
 
+### /submit（未完成）
+
+
+
 ## 键值对内容（待定、未完成）
 
 | 键             | 值                                                 |
@@ -204,8 +208,6 @@ https://api.upup.cool/get/x264/debian/amd64
 https://api.upup.cool/get/x264/debian/aarch64
 https://api.upup.cool/get/x264/mac/amd64
 ```
-
-
 
 ----
 

@@ -278,28 +278,9 @@ async function handleRequest(request) {
     );
   }
 
-  //测试返回链接
-  if (pathname.startsWith("/dev")) {
-    return fetch(
-      "https://github.com/advancedfx/advancedfx/releases/download/v2.116.0/hlae_2_116_0.zip"
-    );
-  }
-
-  if (pathname.startsWith("/api")) {
-    return new Response(JSON.stringify({ pathname }), {
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  if (pathname.startsWith("/status")) {
-    const httpStatusCode = Number(pathname.split("/")[2]);
-
-    return Number.isInteger(httpStatusCode)
-      ? fetch("https://http.cat/" + httpStatusCode)
-      : new Response("That's not a valid HTTP status code.");
-  }
-
-  return fetch("https://welcome.developers.workers.dev");
+  return fetch(
+      "https://upup.cool"
+  );
 }
 
 
