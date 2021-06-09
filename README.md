@@ -76,7 +76,7 @@ return new Response(JSON.stringify({ pathname }), {
 
 | API示例                                                  | 含义                                                         |
 | -------------------------------------------------------- | ------------------------------------------------------------ |
-| /`仓库主`/`仓库名`/                                      | 同/`仓库主`/`仓库名`/latest，下面包含latest的API**同样适用** |
+| /`仓库主`/`仓库名`/                                      | 同/`仓库主`/`仓库名`/latest，下面包含latest的API**同样适用**， |
 | /`仓库主`/`仓库名`/`版本号`                              | 获取该仓库的`版本号`对应版本的唯一附件，附件>=1个时返回400错误 |
 | /`仓库主`/`仓库名`/latest                                | 获取该仓库的最新版本的唯一附件，附件>=1个时返回400错误       |
 | /`仓库主`/`仓库名`/latest/version                        | 获取该仓库的最新的版本号                                     |
@@ -84,22 +84,50 @@ return new Response(JSON.stringify({ pathname }), {
 | /`仓库主`/`仓库名`/latest/info                           | 获取该仓库的最新的信息，包括版本号、更新内容、精简的附件信息和源代码下载地址 |
 | /`仓库主`/`仓库名`/latest/?`包含`&`不包含`&`开头`&`结尾` | 获取该仓库的最新版本的附件，同时过滤附件名得到唯一附件，如a&b&c&d代表附件名包含a、不包含d、开头为c结尾是d的附件，匹配的附件>=1个时返回400错误 |
 
-
-
 ### /get
 
+| API示例                                               | 含义                                                         |
+| ----------------------------------------------------- | ------------------------------------------------------------ |
+| /get/`仓库简称`                                       | 获取该仓库的最新版本的唯一附件，使用KV存储的filter信息       |
+| /get/`仓库简称`/`版本号`                              | 获取该仓库的`版本号`对应版本的附件，同样使用KV存储的filter信息 |
+| /get/`仓库简称`/latest/version                        | 同repo处说明                                                 |
+| /get/`仓库简称`/latest/source                         | 同repo处说明                                                 |
+| /get/`仓库简称`/latest/info                           | 同repo处说明                                                 |
+| /get/`仓库简称`/latest/?`包含`&`不包含`&`开头`&`结尾` | 同repo处说明，只是用这里给的filter                           |
 
+至于KV里如何存`简称-全称`的对应关系
 
-| API示例              | 含义               |
-| -------------------- | ------------------ |
-| /bucket              | 获取所有bucket信息 |
-| /bucket/hlae         | 获取hlae最新安装包 |
-| /bucket/hlae/version |                    |
-| /bucket/ffmpeg/win/  |                    |
-| /bucket/ffmpeg/win/  |                    |
-| /get/hlae            |                    |
+| 键     | 类型         | 例子                                                     |
+| ------ | ------------ | -------------------------------------------------------- |
+| repo   | string       | advancedfx/advancedfx                                    |
+| filter | string array | ["hlae", "", "", ".zip"]                                 |
+| info   | object       | {"zh-CN": "hlae的zip安装包", "zh-TW": "hlae的zip安裝器"} |
 
+Filter设计，KV中以长度为4的矩阵存储
 
+| 键      | 含义       | 例   |
+| ------- | ---------- | ---- |
+| include | 包含字符串 | hlae |
+| exclude | 排除字符串 |      |
+| start   | 开头字符串 |      |
+| end     | 结尾字符串 | .zip |
+
+举例：键为 `hlae`，值为：
+
+```
+{
+	"repo": "advancedfx/advancedfx",
+	"filter": ["hlae", "", "", ".zip"],
+	"info": {
+		"zh-CN": "hlae的zip安装包",
+		"zh-TW": "hlae的zip安裝包"
+	}
+}
+```
+
+之后使用URL如`https://api.upup.cool/get/hlae`即可直接下载hlae的最新zip安装包，同时包含CDN服务，避免了很多访问速度的问题。
+
+### /bucket （未完成）
 
 | API示例              | 含义               |
 | -------------------- | ------------------ |
@@ -112,26 +140,10 @@ return new Response(JSON.stringify({ pathname }), {
 
 ```
 https://api.upup.cool/get/hlae
-https://github.com/仓库名/archive/refs/tags/版本号.zip
+https://github.com/仓库名/archive/refs/tags/版本号.zip  //source下载
 ```
 
-## 键值对值的设计
-
-> Json格式
-
-| 键      | 含义       | 例                    |
-| ------- | ---------- | --------------------- |
-| repo    | 仓库名     | advancedfx/advancedfx |
-| include | 包含字符串 | hlae                  |
-| exclude | 排除字符串 |                       |
-| start   | 开头字符串 |                       |
-| end     | 结尾字符串 | .zip                  |
-
-/hlae%%%.zip  %分隔
-
-若只有repo仓库名且只有一个附件直接返回这个附件
-
-## 键值对内容
+## 键值对内容（待定、未完成）
 
 | 键             | 值                                                 |
 | -------------- | -------------------------------------------------- |
