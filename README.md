@@ -10,11 +10,11 @@
 
 以下是设计草稿，非最终版
 
-cdn.js是原项目单纯的加速功能
+cdn.js是原项目单纯的CDN加速功能
 
-api.js是本项目的核心
+api.js是本项目的核心，提供API服务
 
-# CloudFlare Workers API设计
+## 常用方法踩坑
 
 - 获取KV值
 
@@ -28,30 +28,87 @@ const value = await FIRST_KV_NAMESPACE.get("first-key")
 await NAMESPACE.put(key, value)
 ```
 
-## 访问API
+- 跳转
 
-| 键                                                           | 含义                         |
-| ------------------------------------------------------------ | ---------------------------- |
-| repo                                                         | 从github仓库获取             |
-| bucket（想法是定时让CF去取地址放在键值对里，用bucket秒获得链接，不用解析github api，不知道有无弊端，最后实现） | 获取已缓存到KV的附件、版本号 |
-| get                                                          | 实时获取KV对应的附件、版本号 |
+```
+return fetch("网址");
+```
 
-- 后面跟version获取版本号，不跟则获取最新版本下载地址。
-- 最后一个字段过滤解决多个附件的情况，用 `%` 分隔 include%exclude%start%end，如 `hlae%%%.zip` 代表包含hlae、结尾是.zip的附件。
+- 返回数据
 
-| API示例                                    | 含义               |
-| ------------------------------------------ | ------------------ |
-| /repo/advancedfx/advancedfx/`版本号`       |                    |
-| /repo/advancedfx/advancedfx/`版本号`/      |                    |
-| /repo/advancedfx/advancedfx/latest/version |                    |
-| /repo/advancedfx/advancedfx/latest/hlae%   |                    |
-| /repo/advancedfx/advancedfx/latest/source  |                    |
-| /bucket                                    | 获取所有bucket信息 |
-| /bucket/hlae                               | 获取hlae最新安装包 |
-| /bucket/hlae/version                       |                    |
-| /bucket/ffmpeg/win/                        |                    |
-| /bucket/ffmpeg/win/                        |                    |
-| /get/hlae                                  |                    |
+```
+return new Response(数据);
+```
+
+- 重定向 301 302 等
+
+```
+Response.redirect(newUrl, 302);
+```
+
+- 返回JSON序列化的数据，同时指定headers和status状态
+
+```
+return new Response(JSON.stringify({ pathname }), {
+  headers: { "Content-Type": "application/json" },
+  status: 200, //200-成功 400-请求无效
+});
+```
+
+## API设计
+
+- KV（Key-Value）键值对：CloudFlare提供了免费1GB的键值对存储功能，可以设置多个命名空间，Workers可以读写这些键值对达到某种功能
+
+### 一级API
+
+| 键      | 含义                                                         |
+| ------- | ------------------------------------------------------------ |
+| /repo   | 获取GitHub仓库信息                                           |
+| /get    | 利用KV中已有的键值对快速获取GitHub仓库信息                   |
+| /bucket | 与get类似，但是获取的是KV中存储定时缓存的仓库信息，省去了访问GitHub API的过程 |
+| /submit | 向KV提交键值对                                               |
+
+> bucket 想法是定时让CF去取地址放在键值对里，用bucket秒获得链接，不用解析github api，不知道有无弊端，最后实现。
+
+### 二级API
+
+### /repo
+
+| API示例                                                  | 含义                                                         |
+| -------------------------------------------------------- | ------------------------------------------------------------ |
+| /`仓库主`/`仓库名`/                                      | 同/`仓库主`/`仓库名`/latest，下面包含latest的API**同样适用** |
+| /`仓库主`/`仓库名`/`版本号`                              | 获取该仓库的`版本号`对应版本的唯一附件，附件>=1个时返回400错误 |
+| /`仓库主`/`仓库名`/latest                                | 获取该仓库的最新版本的唯一附件，附件>=1个时返回400错误       |
+| /`仓库主`/`仓库名`/latest/version                        | 获取该仓库的最新的版本号                                     |
+| /`仓库主`/`仓库名`/latest/source                         | 获取该仓库的最新的源代码下载地址                             |
+| /`仓库主`/`仓库名`/latest/info                           | 获取该仓库的最新的信息，包括版本号、更新内容、精简的附件信息和源代码下载地址 |
+| /`仓库主`/`仓库名`/latest/?`包含`&`不包含`&`开头`&`结尾` | 获取该仓库的最新版本的附件，同时过滤附件名得到唯一附件，如a&b&c&d代表附件名包含a、不包含d、开头为c结尾是d的附件，匹配的附件>=1个时返回400错误 |
+
+
+
+### /get
+
+
+
+| API示例              | 含义               |
+| -------------------- | ------------------ |
+| /bucket              | 获取所有bucket信息 |
+| /bucket/hlae         | 获取hlae最新安装包 |
+| /bucket/hlae/version |                    |
+| /bucket/ffmpeg/win/  |                    |
+| /bucket/ffmpeg/win/  |                    |
+| /get/hlae            |                    |
+
+
+
+| API示例              | 含义               |
+| -------------------- | ------------------ |
+| /bucket              | 获取所有bucket信息 |
+| /bucket/hlae         | 获取hlae最新安装包 |
+| /bucket/hlae/version |                    |
+| /bucket/ffmpeg/win/  |                    |
+| /bucket/ffmpeg/win/  |                    |
+| /get/hlae            |                    |
 
 ```
 https://api.upup.cool/get/hlae

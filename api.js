@@ -11,6 +11,9 @@
 //Workers部署的地址、链接
 const ASSET_URL = "https://api.upup.cool/";
 
+//
+const AUTH = '';
+
 // 前缀，如果自定义路由为example.com/gh/*，将PREFIX改为 '/gh/'，注意，少一个杠都会错！
 const PREFIX = "/";
 
@@ -197,6 +200,20 @@ async function proxy(urlObj, reqInit, rawLen) {
 async function handleRequest(request) {
   const { pathname } = new URL(request.url);
 
+  //返回主页
+  if (pathname === '' || pathname === '/') {
+    return fetch(
+        "https://upup.cool"
+    );
+  }
+
+  //列出当前的键值对信息
+  if (pathname.startsWith("/list")) {
+    return fetch(
+        "https://github.com/advancedfx/advancedfx/releases/download/v2.116.0/hlae_2_116_0.zip"
+    );
+  }
+
   // 自定义
   if (pathname.startsWith("/repo")) {
     // 路径分隔后0是域名 1=repo/get/bucket 2=...
@@ -241,6 +258,27 @@ async function handleRequest(request) {
   }
 
   //测试返回链接
+  if (pathname.startsWith("/get")) {
+    return fetch(
+        "https://github.com/advancedfx/advancedfx/releases/download/v2.116.0/hlae_2_116_0.zip"
+    );
+  }
+
+  //获取已缓存的最新版本信息
+  if (pathname.startsWith("/bucket")) {
+    return fetch(
+        "https://github.com/advancedfx/advancedfx/releases/download/v2.116.0/hlae_2_116_0.zip"
+    );
+  }
+
+  //提交get的快速键值对，需要Auth认证
+  if (pathname.startsWith("/submit")) {
+    return fetch(
+        "https://github.com/advancedfx/advancedfx/releases/download/v2.116.0/hlae_2_116_0.zip"
+    );
+  }
+
+  //测试返回链接
   if (pathname.startsWith("/dev")) {
     return fetch(
       "https://github.com/advancedfx/advancedfx/releases/download/v2.116.0/hlae_2_116_0.zip"
@@ -263,3 +301,17 @@ async function handleRequest(request) {
 
   return fetch("https://welcome.developers.workers.dev");
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
