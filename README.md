@@ -67,6 +67,7 @@ return new Response(JSON.stringify({ pathname }), {
 | /get    | 利用KV中已有的键值对快速获取GitHub仓库信息                   |
 | /bucket | 与get类似，但是获取的是KV中存储定时缓存的仓库信息，省去了访问GitHub API的过程 |
 | /submit | 向KV提交键值对                                               |
+| /list   | 列出KV键值对                                                 |
 
 > bucket 想法是定时让CF去取地址放在键值对里，用bucket秒获得链接，不用解析github api，不知道有无弊端，最后实现。
 
