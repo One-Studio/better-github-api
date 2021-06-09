@@ -98,13 +98,13 @@ return new Response(JSON.stringify({ pathname }), {
 
 至于KV里如何存`简称-全称`的对应关系
 
-| 键     | 类型         | 例子                                                     |
-| ------ | ------------ | -------------------------------------------------------- |
-| repo   | string       | advancedfx/advancedfx                                    |
-| filter | string array | ["hlae", "", "", ".zip"]                                 |
-| info   | object       | {"zh_CN": "hlae的zip安装包", "zh_TW": "hlae的zip安裝器"} |
+| 键     | 类型   | 例子                                                     |
+| ------ | ------ | -------------------------------------------------------- |
+| repo   | string | advancedfx/advancedfx                                    |
+| filter | string | hlae&&&.zip                                              |
+| info   | object | {"zh_CN": "hlae的zip安装包", "zh_TW": "hlae的zip安裝器"} |
 
-Filter设计，KV中以长度为4的矩阵存储
+filter用`&`分隔的各个部分含义
 
 | 键      | 含义       | 例   |
 | ------- | ---------- | ---- |
@@ -118,7 +118,7 @@ Filter设计，KV中以长度为4的矩阵存储
 ```
 {
 	"repo": "advancedfx/advancedfx",
-	"filter": ["hlae", "", "", ".zip"],
+	"filter": "hlae&&&.zip",
 	"info": {
 		"zh_CN": "hlae的zip安装包",
 		"zh_TW": "hlae的zip安裝包"
@@ -142,6 +142,7 @@ Filter设计，KV中以长度为4的矩阵存储
 ```
 https://api.upup.cool/get/hlae
 https://github.com/仓库名/archive/refs/tags/版本号.zip  //source下载
+https://github.com/One-Studio/HLAE-Studio/archive/refs/heads/main.zip
 ```
 
 ### /submit（未完成）

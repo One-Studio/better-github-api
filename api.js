@@ -206,24 +206,14 @@ async function list(request, pathname) {
 }
 
 /**
- * 访问GitHub仓库信息
- * @param {Request} request
- * @param pathname
- * @returns {Promise<Response>}
+ * 获取Github Release API的结果
+ * @param {string} owner
+ * @param {string} repo
+ * @param {string} version
+ * @returns {Promise<any>}
  */
-async function repo(request, pathname) {
-  // 路径分隔后0是域名 1=repo/get/bucket 2=...
-  const strs = pathname.split("/");
-
-  if (strs.length < 5) {
-    return new Response("invalid input for repo api.");
-  }
-
-  let owner, repo, version, req;
-  owner = strs[2];
-  repo = strs[3];
-  version = strs[4];
-  req = "https://api.github.com/repos/" + owner + "/" + repo + "/releases";
+async function getReleaseInfo(owner, repo, version) {
+  let req = "https://api.github.com/repos/" + owner + "/" + repo + "/releases";
 
   if (version === "latest") {
     req += "/latest";
@@ -232,25 +222,163 @@ async function repo(request, pathname) {
   }
 
   //获得release信息
-  const resp = await fetch(req, {
+  return await fetch(req, {
     headers: {
       accept: "application/json",
       "Content-Type": "application/json",
-      "user-agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36",
     },
   }).then((response) => response.json()); // 解析结果为JSON
+}
 
-  //版本号
-  const tag = resp.tag_name;
-  const assets = resp.assets;
+/**
+ * 获取GitHub Release的（最新）版本号
+ * @param {string} owner
+ * @param {string} repo
+ * @param {string} version
+ * @returns {string}
+ */
+async function getVersion(owner, repo, version) {
+  const resp = await getReleaseInfo(owner, repo, version);
+  return  resp.tag_name;
+}
 
-  if (assets.length === 1) {
-    // return Response.redirect(cdn + assets[0].browser_download_url, 302);
-    return cdnHandler(request, assets[0].browser_download_url);
+/**
+ * 获取某个版本的源代码
+ * @param {string} owner
+ * @param {string} repo
+ * @param {string} version
+ * @returns {string}
+ */
+async function getSourceURL(owner, repo, version) {
+  return  "https://github.com/" + owner + "/" + repo + "/archive/refs/tags/" + getVersion(owner, repo, version) + ".zip";
+}
+
+/**
+ * 获取附件
+ * @param {string} owner
+ * @param {string} repo
+ * @param {string} version
+ * @param {string} filter
+ * @returns {string} TODO 统一返回格式
+ */
+async function getAssets(owner, repo, version, filter) {
+  const resp = await getReleaseInfo(owner, repo, version);
+
+  if (resp.assets.length === 0) {
+    return new Response("failed to find assets.", {status: 400})
   }
 
-  return new Response(resp.tag_name);
+  if (resp.assets.length > 1 && !filter) {
+    return new Response("more than 1 asset without filter.", {status: 400})
+  }
+
+  filter = filter.replace("?", "")
+  const flt = filter.split("&")
+
+  let target, count = 0;
+  for (const asset of resp.assets) {
+    if ( asset.name.contains(flt[0] && !asset.name.contains(flt[1])) &&
+         asset.name.startsWith(flt[2]) && asset.name.endsWith(flt[3]) ) {
+      target = asset.browser_download_url;
+      count++;
+    }
+
+    if ( count > 1 ) {
+      return new Response("multiple assets matched with filter: " + flt, {status: 400})
+    }
+  }
+
+  if (count <= 0) {
+    return new Response("failed to find assets.", {status: 400})
+  }
+
+  return target;
+}
+
+/**
+ * 获取仓库的信息
+ * @param {string} owner
+ * @param {string} repo
+ * @param {string} version
+ * @returns {string}
+ */
+async function getInfo(owner, repo, version) {
+  //TODO
+  return  "https://github.com/" + owner + "/" + repo + "/archive/refs/tags/" + getVersion(owner, repo, version) + ".zip";
+}
+
+/**
+ * 访问GitHub仓库信息
+ * @param {Request} request
+ * @param pathname
+ * @returns {Promise<Response>}
+ */
+async function repo(request, pathname) {
+  // 路径分隔后0为空 1=RepoOwner 2=RepoName 3...
+  const strs = pathname.split("/");
+
+  //判空+赋值
+  if (strs[1] === '' || strs[1] === undefined || strs[2] === '' || strs[2] === undefined) {
+    return new Response('invalid input of Repo Owner or Repo Name.', {status: 400});
+  }
+  const owner = strs[1], repo = strs[2];
+
+  //版本号
+  if( (strs[3] === '' || strs[3] === undefined || strs[3] === 'latest') && (strs[4] === '' || strs[4] === undefined) ){
+    //获取最新版的唯一附件
+
+
+  }
+
+  if ( (strs[3].startsWith("?") && (strs[4] === '' || strs[4] === undefined)) || (strs[3] === 'latest' && strs[4].startsWith("?")) ) {
+    //获取过滤后的唯一附件
+
+  }
+
+  if ( (strs[3] === 'latest' && strs[4] === 'version') || (strs[3] === 'version') ) {
+    //获取最新版本的版本号
+
+  }
+
+  if ( (strs[3] === 'latest' && strs[4] === 'source') || (strs[3] === 'source') ) {
+    //获取最新版本的源码
+
+  }
+
+  if ( (strs[3] === 'latest' && strs[4] === 'info') || (strs[3] === 'info') ) {
+    //获取最新版本的源码
+
+  }
+
+  //指定标签的5种情况
+  //TODO 根据tag_name 调用API 获取信息
+
+  if (strs[4] === '' || strs[4] === undefined) {
+    //获取指定标签的唯一附件
+  }
+
+  if (strs[4] === 'source') {
+    //获取指定标签的唯一附件
+  }
+
+  if (strs[4] === 'info') {
+    //获取指定标签的唯一附件
+  }
+
+
+  // if (strs[4] === 'version') {
+    //获取指定标签的版本 P.S. 这个请求无意义
+  // }
+
+
+
+  // if (assets.length === 1) {
+  //   // return Response.redirect(cdn + assets[0].browser_download_url, 302);
+  //   return cdnHandler(request, assets[0].browser_download_url);
+  // }
+  //
+  // return new Response(resp.tag_name);
 }
 
 /**
