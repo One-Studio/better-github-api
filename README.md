@@ -102,7 +102,7 @@ return new Response(JSON.stringify({ pathname }), {
 | ------ | ------------ | -------------------------------------------------------- |
 | repo   | string       | advancedfx/advancedfx                                    |
 | filter | string array | ["hlae", "", "", ".zip"]                                 |
-| info   | object       | {"zh-CN": "hlae的zip安装包", "zh-TW": "hlae的zip安裝器"} |
+| info   | object       | {"zh_CN": "hlae的zip安装包", "zh_TW": "hlae的zip安裝器"} |
 
 Filter设计，KV中以长度为4的矩阵存储
 
@@ -120,8 +120,8 @@ Filter设计，KV中以长度为4的矩阵存储
 	"repo": "advancedfx/advancedfx",
 	"filter": ["hlae", "", "", ".zip"],
 	"info": {
-		"zh-CN": "hlae的zip安装包",
-		"zh-TW": "hlae的zip安裝包"
+		"zh_CN": "hlae的zip安装包",
+		"zh_TW": "hlae的zip安裝包"
 	}
 }
 ```

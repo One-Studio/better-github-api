@@ -9,7 +9,7 @@
 //////////////////////////////////////////
 
 //Workers部署的地址、链接
-const ASSET_URL = "https://api.upup.cool/";
+const ASSET_URL = "api2.one-studio.workers.dev";
 
 //
 const AUTH = '';
@@ -42,7 +42,7 @@ const PREFLIGHT_INIT = {
   headers: new Headers({
     "access-control-allow-origin": "*",
     "access-control-allow-methods":
-      "GET,POST,PUT,PATCH,TRACE,DELETE,HEAD,OPTIONS",
+        "GET,POST,PUT,PATCH,TRACE,DELETE,HEAD,OPTIONS",
     "access-control-max-age": "1728000",
   }),
 };
@@ -77,8 +77,8 @@ function httpHandler(req, pathname) {
 
   // preflight
   if (
-    req.method === "OPTIONS" &&
-    reqHdrRaw.has("access-control-request-headers")
+      req.method === "OPTIONS" &&
+      reqHdrRaw.has("access-control-request-headers")
   ) {
     return new Response(null, PREFLIGHT_INIT);
   }
@@ -260,8 +260,17 @@ async function repo(request, pathname) {
  * @returns {Promise<Response>}
  */
 async function get(request, pathname) {
+  const resp = await KV.get("hlae");
+  console.log(typeof(resp))
+  const value = JSON.parse(resp);
+  const repo = value.repo;
+  const filter = value.filter;
+  const info = value.info;
+  const zh = info.zh_CN;
 
-  return  fetch("");
+  console.log(repo, filter, info, zh);
+
+  return new Response("OK");
 }
 
 /**
@@ -330,17 +339,3 @@ async function handleRequest(request) {
       "https://upup.cool"
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
