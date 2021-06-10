@@ -245,32 +245,38 @@ async function getVersion(owner, repo, version) {
 
 /**
  * 获取某个版本的源代码
+ * @param request
  * @param {string} owner
  * @param {string} repo
  * @param {string} version
  * @returns {string}
  */
-async function getSourceURL(owner, repo, version) {
+async function getSourceURL(request, owner, repo, version) {
   return  "https://github.com/" + owner + "/" + repo + "/archive/refs/tags/" + getVersion(owner, repo, version) + ".zip";
 }
 
 /**
  * 获取附件
+ * @param request
  * @param {string} owner
  * @param {string} repo
  * @param {string} version
  * @param {string} filter
- * @returns {string} TODO 统一返回格式
+ * @returns {Response} TODO 统一返回格式
  */
-async function getAssets(owner, repo, version, filter) {
+async function getAssets(request, owner, repo, version, filter) {
   const resp = await getReleaseInfo(owner, repo, version);
 
   if (resp.assets.length === 0) {
     return new Response("failed to find assets.", {status: 400})
   }
 
-  if (resp.assets.length > 1 && !filter) {
-    return new Response("more than 1 asset without filter.", {status: 400})
+  if (!filter) {
+    if (resp.assets.length === 1) {
+      return cdnHandler(request, resp.assets[0].browser_download_url);
+    } else {
+      return new Response("failed to handle more than 1 asset without filter.", {status: 400})
+    }
   }
 
   filter = filter.replace("?", "")
@@ -285,26 +291,27 @@ async function getAssets(owner, repo, version, filter) {
     }
 
     if ( count > 1 ) {
-      return new Response("multiple assets matched with filter: " + flt, {status: 400})
+      return new Response("failed to handle multiple assets matched with filter: " + flt, {status: 400})
     }
   }
 
   if (count <= 0) {
-    return new Response("failed to find assets.", {status: 400})
+    return new Response("failed to find any matched assets with filter.", {status: 400})
   }
 
-  return target;
+  //返回正确结果
+  return cdnHandler(request, target);
 }
 
 /**
- * 获取仓库的信息
+ * TODO 获取仓库的信息
+ * @param request
  * @param {string} owner
  * @param {string} repo
  * @param {string} version
  * @returns {string}
  */
-async function getInfo(owner, repo, version) {
-  //TODO
+async function getInfo(request, owner, repo, version) {
   return  "https://github.com/" + owner + "/" + repo + "/archive/refs/tags/" + getVersion(owner, repo, version) + ".zip";
 }
 
@@ -327,58 +334,58 @@ async function repo(request, pathname) {
   //版本号
   if( (strs[3] === '' || strs[3] === undefined || strs[3] === 'latest') && (strs[4] === '' || strs[4] === undefined) ){
     //获取最新版的唯一附件
-
-
+    return getAssets(request, owner, repo, "latest", "")
   }
 
   if ( (strs[3].startsWith("?") && (strs[4] === '' || strs[4] === undefined)) || (strs[3] === 'latest' && strs[4].startsWith("?")) ) {
     //获取过滤后的唯一附件
-
+    const filter = strs.split("?")[1]
+    return getAssets(owner,repo, "latest", filter);
   }
 
   if ( (strs[3] === 'latest' && strs[4] === 'version') || (strs[3] === 'version') ) {
     //获取最新版本的版本号
-
+    return new Response(getVersion(owner, repo, "latest"))
   }
 
   if ( (strs[3] === 'latest' && strs[4] === 'source') || (strs[3] === 'source') ) {
     //获取最新版本的源码
-
+    return cdnHandler(request, getSourceURL(request, owner, repo, "latest"))
   }
 
   if ( (strs[3] === 'latest' && strs[4] === 'info') || (strs[3] === 'info') ) {
-    //获取最新版本的源码
-
+    //获取最新版本的信息
+    return new Response(getInfo(request, owner, repo, "latest"))
   }
 
   //指定标签的5种情况
-  //TODO 根据tag_name 调用API 获取信息
-
+  const tag_name = strs[3]
   if (strs[4] === '' || strs[4] === undefined) {
     //获取指定标签的唯一附件
+    return getAssets(request, owner, repo, tag_name, "");
+  }
+
+  if (strs[4].startsWith("?")) {
+    const filter = strs[4].split("?")[1]
+    return getAssets(owner,repo, "latest", filter);
   }
 
   if (strs[4] === 'source') {
-    //获取指定标签的唯一附件
+    //获取指定标签的源代码
+    return cdnHandler(request, getSourceURL(request, owner, repo, tag_name))
   }
 
   if (strs[4] === 'info') {
-    //获取指定标签的唯一附件
+    //获取指定标签的信息
+    return new Response(getInfo(request, owner, repo, tag_name))
   }
 
-
-  // if (strs[4] === 'version') {
+  if (strs[4] === 'version') {
     //获取指定标签的版本 P.S. 这个请求无意义
-  // }
+    return new Response("meaningless request for a version's version.", {status: 400});
+  }
 
-
-
-  // if (assets.length === 1) {
-  //   // return Response.redirect(cdn + assets[0].browser_download_url, 302);
-  //   return cdnHandler(request, assets[0].browser_download_url);
-  // }
-  //
-  // return new Response(resp.tag_name);
+  return new Response("invalid input.", {status: 400});
 }
 
 /**
