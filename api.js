@@ -227,7 +227,7 @@ async function getReleaseInfo(owner, repo, version) {
   if (version === "latest") {
     req += "/latest";
   } else {
-    req += "/tag/" + version;
+    req += "/tags/" + version;
   }
 
   //获得release信息
@@ -276,8 +276,6 @@ async function getSource(request, owner, repo, version) {
  */
 async function getAssets(request, owner, repo, version, filter) {
   const resp = await getReleaseInfo(owner, repo, version);
-  // console.log(resp)
-  // const resp = JSON.parse(info)
   if (getJsonLength(resp.assets) === 0) {
     return new Response("failed to find assets.", {status: 400})
   }
@@ -291,15 +289,10 @@ async function getAssets(request, owner, repo, version, filter) {
   }
 
   const flt = filter.split("&")
-  console.log(flt)
 
   let target, count = 0;
   for (const asset of resp.assets) {
     const name = asset.name
-    // console.log(name.search(flt[1]) !== -1)
-    // console.log(name.search(flt[2]) === -1)
-    // console.log(name.startsWith(flt[3]))
-    // console.log(name.endsWith(flt[4]))
 
     if ( (flt[1] === '' || name.search(flt[1]) !== -1 ) &&
          (flt[2] === '' || name.search(flt[2]) === -1 ) &&
@@ -343,7 +336,7 @@ async function getInfo(request, owner, repo, version) {
 async function repo(request, pathname) {
   // 路径分隔 1=RepoOwner 2=RepoName 3...
   const strs = pathname.split("/");
-  console.log(strs)
+  // console.log(strs)
 
   //判空+赋值
   if (strs[1] === '' || strs[1] === undefined || strs[2] === '' || strs[2] === undefined) {
@@ -369,7 +362,8 @@ async function repo(request, pathname) {
 
   if ( (strs[3] === 'latest' && strs[4] === 'version') || (strs[3] === 'version') ) {
     //获取最新版本的版本号
-    return new Response(getVersion(owner, repo, "latest"))
+    const version = await getVersion(owner, repo, "latest")
+    return new Response(version)
   }
 
   if ( (strs[3] === 'latest' && strs[4] === 'source') || (strs[3] === 'source') ) {
@@ -379,7 +373,8 @@ async function repo(request, pathname) {
 
   if ( (strs[3] === 'latest' && strs[4] === 'info') || (strs[3] === 'info') ) {
     //获取最新版本的信息
-    return new Response(getInfo(request, owner, repo, "latest"))
+    const info = await getInfo(request, owner, repo, "latest")
+    return new Response(info)
   }
 
   //指定标签的5种情况
@@ -390,12 +385,12 @@ async function repo(request, pathname) {
   }
 
   if (strs[4].startsWith("&")) {
-    return getAssets(request, owner, repo, "latest", strs[4]);
+    return getAssets(request, owner, repo,  tag_name, strs[4]);
   }
 
   if (strs[4] === 'source') {
     //获取指定标签的源代码
-    return cdnHandler(request, getSource(request, owner, repo, tag_name))
+    return getSource(request, owner, repo, tag_name)
   }
 
   if (strs[4] === 'info') {
