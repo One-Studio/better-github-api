@@ -477,7 +477,7 @@ async function get(request, pathname) {
   }
   const value = JSON.parse(resp);
 
-  if (!value.has(value.repo)) {
+  if (!value.hasOwnProperty("repo")) {
     return new Response('failed to get repo info from key-value pair\'s value' + key, {status: 400});
   }
   const info = value.info;
