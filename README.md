@@ -2,15 +2,13 @@
 
 <p align="center">Better, Eazy, Access Anywhere</p>
 
-<p align="center">[![stars](https://img.shields.io/github/stars/One-Studio/better-github-api.svg?style=flat&color=green)](https://github.com/One-Studio/better-github-api
+   [![stars](https://img.shields.io/github/stars/One-Studio/better-github-api.svg?style=flat&color=green)](https://github.com/One-Studio/better-github-api
 )
-[![fork](https://img.shields.io/github/forks/One-Studio/better-github-api.svg?style=flat&color=critical)](https://github.com/One-Studio/better-github-api)
-![license](https://img.shields.io/badge/license-MIT%203-orange.svg?style=flat)
-[![donate](https://img.shields.io/badge/$-donate-ff69b4.svg?style=flat)](https://github.com/One-Studio/better-github-api#捐赠
+   [![fork](https://img.shields.io/github/forks/One-Studio/better-github-api.svg?style=flat&color=critical)](https://github.com/One-Studio/better-github-api)
+   ![license](https://img.shields.io/badge/license-MIT%203-orange.svg?style=flat)
+   [![donate](https://img.shields.io/badge/$-donate-ff69b4.svg?style=flat)](https://github.com/One-Studio/better-github-api#捐赠
 )
-[![translation](https://img.shields.io/badge/$-translation-ff69b4.svg?style=flat&color=blueviolet)](https://github.com/One-Studio/better-github-api#翻译)
-[![release](https://img.shields.io/github/release/One-Studio/better-github-api.svg?style=flat&color=blue)](https://github.com/One-Studio/better-github-api/releases)
-<p>
+   [![translation](https://img.shields.io/badge/$-translation-ff69b4.svg?style=flat&color=blueviolet)](https://github.com/One-Studio/better-github-api#翻译)
 
 ## 介绍
 
