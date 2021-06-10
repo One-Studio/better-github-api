@@ -439,24 +439,36 @@ async function repo(request, pathname) {
  */
 async function get(request, pathname) {
   //路径分隔 1=键 2...
-  const key = pathname.split("/")[1];
+  const strs = pathname.split("/")
+  console.log(strs)
+  const key = strs[1];
   //处理空值
   if (key === '' || key === undefined) {
     return new Response("no key is found, check input.", {status: 400});
   }
 
   //从KV命名空间获取数据
-  const resp = await KV.get(key);
-  // console.log(typeof(resp))
+  const resp = await KV.get("hlae");
+  console.log(resp)
+
   const value = JSON.parse(resp);
-  const repo = value.repo;
-  const filter = value.filter;  //TODO 检查请求最后一个有没有filter，有就替换KV里的
   const info = value.info;
-  const zh = info.zh_CN;
+  // const zh = info.zh_CN;
 
-  console.log(repo, filter, info, zh);
+  const repo_info = value.repo;
 
-  return new Response("OK");
+  //检查请求中有没有filter，有就替换KV里的
+  let filter;
+  if ( strs[strs.length-1].startsWith("&") ) {
+    filter = strs[strs.length-1];
+  } else {
+    filter = value.filter;
+  }
+
+  //bug  TODO  strs.slice(2, strs.length-1).join("/")
+  const req = "/" + repo_info + "/" +  + "/" + filter;
+  console.log(req)
+  return repo(request, req);
 }
 
 /**
@@ -506,17 +518,17 @@ async function handleRequest(request) {
 
   //使用KV键值对的简写访问仓库信息
   if (pathname.startsWith("/get")) {
-    return get(request, pathname.replace("/repo", ""))
+    return get(request, pathname.replace("/get", ""))
   }
 
   //获取已缓存的最新版本信息
   if (pathname.startsWith("/bucket")) {
-    return bucket(request, pathname.replace("/repo", ""))
+    return bucket(request, pathname.replace("/bucket", ""))
   }
 
   //提交get的快速键值对，需要Auth认证
   if (pathname.startsWith("/submit")) {
-    return submit(request, pathname.replace("/repo", ""))
+    return submit(request, pathname.replace("/submit", ""))
   }
 
   return Response.redirect("https://upup.cool", 302);
