@@ -1,6 +1,6 @@
 <h1 align="center">better-github-api</h1>
 
-<p align="center">Better, Eazy, Access Anywhere</p>
+<p align="">Better, Eazy, Access Anywhere</p>
 
    [![stars](https://img.shields.io/github/stars/One-Studio/better-github-api.svg?style=flat&color=green)](https://github.com/One-Studio/better-github-api
 )
