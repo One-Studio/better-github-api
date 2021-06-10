@@ -8,11 +8,16 @@
 //    以下是better-github-api的核心设置    //
 //////////////////////////////////////////
 
+/////常用
 //Workers部署的地址、链接
-const ASSET_URL = "api2.one-studio.workers.dev";
+const ASSET_URL = "api.upup.cool";
 
-//
-const AUTH = '';
+//主页 请求无参数时跳转主页
+const HOME_PAGE = "upup.cool";
+
+//认证？待定
+const AUTH = "";
+/////
 
 // 前缀，如果自定义路由为example.com/gh/*，将PREFIX改为 '/gh/'，注意，少一个杠都会错！
 const PREFIX = "/";
@@ -67,7 +72,6 @@ function newUrl(urlStr) {
     return null;
   }
 }
-
 
 /**
  *
@@ -465,8 +469,8 @@ async function get(request, pathname) {
     filter = value.filter;
   }
 
-  //bug  TODO  strs.slice(2, strs.length-1).join("/")
-  const req = "/" + repo_info + "/" +  + "/" + filter;
+
+  const req = "/" + repo_info + "/" + strs.slice(2, strs.length).join("/") + "/" + filter;
   console.log(req)
   return repo(request, req);
 }
@@ -503,7 +507,7 @@ async function handleRequest(request) {
 
   //空请求返回主页
   if (pathname === '' || pathname === '/') {
-    return Response.redirect("https://upup.cool", 302);
+    return Response.redirect(HOME_PAGE, 302);
   }
 
   //列出当前的键值对信息
@@ -531,5 +535,5 @@ async function handleRequest(request) {
     return submit(request, pathname.replace("/submit", ""))
   }
 
-  return Response.redirect("https://upup.cool", 302);
+  return new Response("invalid request format.", {status: 404});
 }
