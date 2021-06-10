@@ -14,7 +14,7 @@
 
 基于 [gh-proxy](https://github.com/hunshcn/gh-proxy) + [Jsdelivr](https://www.jsdelivr.com/) + [cnpmjs](https://cnpmjs.org/) + [cloudflare workers](https://workers.cloudflare.com)  的 GitHub Serverless API 工具。
 
-**cdn.js**：仅含 gh-proxy 中的CDN功能，URL后加上GitHub各种资源（源码、Release文件等）的下载链接跳转为对应CDN加速的链接。
+**cdn.js**：仅含 gh-proxy 中的CDN功能，URL后加上GitHub各种资源（源码、Release文件等）的下载链接跳转为对应CDN加速的链接。1
 
 **api.js**：本项目的核心，提供API服务，部署时只用修改最开始的几个变量参数。
 
