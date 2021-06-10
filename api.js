@@ -472,7 +472,14 @@ async function get(request, pathname) {
 
   //从KV命名空间获取数据
   const resp = await KV.get(key);
+  if (resp == null) {
+    return new Response('failed to find key:' + key, {status: 400});
+  }
   const value = JSON.parse(resp);
+
+  if (!value.has(value.repo)) {
+    return new Response('failed to get repo info from key-value pair\'s value' + key, {status: 400});
+  }
   const info = value.info;
   const repo_info = value.repo;
   // const zh = info.zh_CN;
