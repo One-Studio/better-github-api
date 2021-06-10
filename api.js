@@ -262,7 +262,9 @@ async function getVersion(owner, repo, version) {
  * @returns {Response}
  */
 async function getSource(request, owner, repo, version) {
-  return  cdnHandler(request, "https://github.com/" + owner + "/" + repo + "/archive/refs/tags/" + getVersion(owner, repo, version) + ".zip")
+  const ver = await getVersion(owner, repo, version)
+  // console.log(ver)
+  return  cdnHandler(request, "https://github.com/" + owner + "/" + repo + "/archive/refs/tags/" + ver + ".zip")
 }
 
 /**
