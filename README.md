@@ -14,7 +14,7 @@
 
 基于 [gh-proxy](https://github.com/hunshcn/gh-proxy) + [Jsdelivr](https://www.jsdelivr.com/) + [cnpmjs](https://cnpmjs.org/) + [cloudflare workers](https://workers.cloudflare.com)  的 GitHub Serverless API 工具。
 
-**cdn.js**：仅含 gh-proxy 中的CDN功能，URL后加上GitHub各种资源（源码、Release文件等）的下载链接跳转为对应CDN加速的链接。1
+**cdn.js**：仅含 gh-proxy 中的CDN功能，URL后加上GitHub各种资源（源码、Release文件等）的下载链接跳转为对应CDN加速的链接。
 
 **api.js**：本项目的核心，提供API服务，部署时只用修改最开始的几个变量参数。
 
@@ -30,7 +30,7 @@
 - 提供简明的API，可作为程序分发的固定下载链接；
 - 开销低，每个账号CloudFlare Workers 免费请求额度为 **~1k次/小时** **~100k次/天**，5$付费版 **~10m次/天**，且可开多个账号。
 
-> 如需用自己的域名，需要使用CloudFlare的DNS服务
+> 如需用自己的域名，应使用CloudFlare的DNS服务（maybe可使用CNAME跳转Worker的域名）
 
 ## 路线图
 
@@ -41,25 +41,56 @@
 - [ ] list
 - [ ] ...
 
-## 部署与使用
+## 使用
 
-Cloudflare Workers计费
+如果有配置好的API服务可以直接使用，API[参考](##API设计)，这里给出可用的域名，请尽量自己搭建减少这里的压力，毕竟是免费的：
 
-到 `overview` 页面可参看使用情况。免费版每天有 10 万次免费请求，并且有每分钟1000次请求的限制。
+- https://api.upup.cool
 
-如果不够用，可升级到 $5 的高级版本，每月可用 1000 万次请求（超出部分 $0.5/百万次请求）。
+> 也可以把你搭好的地址提交到issue中
 
-首页：
+## 部署
 
-注册，登陆，`Start building`，取一个子域名，`Create a Worker`。
+登录 [Cloudflare Workers](https://workers.cloudflare.com) 注册，登陆，选择Workers，创建Worker。
 
-复制 [index.js](https://cdn.jsdelivr.net/hunshcn/gh-proxy@master/index.js)  到左侧代码框，`Save and deploy`。如果正常，右侧应显示首页。
+### CDN服务
 
-`index.js`默认配置下clone走github.com.cnpmjs.org，项目文件会走jsDeliver，如需走worker，修改Config变量即可
+1. 复制项目文件中`cdn.js`的内容到左侧代码框；
+2. 修改 **ASSET_URL**, **Config**, **PREFIX**；
+3. 保存并部署
+4. （可选）修改Worker的域名/路由
 
-`ASSET_URL`是静态资源的url（实际上就是现在显示出来的那个输入框单页面）
+### API服务
 
-`PREFIX`是前缀，默认（根路径情况为"/"），如果自定义路由为example.com/gh/*，请将PREFIX改为 '/gh/'，注意，少一个杠都会错！
+1. 复制项目文件中`api.js`的内容到左侧代码框，`保存并部署`。
+2. 修改 **ASSET_URL**, **Config**, **PREFIX**
+3. 保存并部署
+4. 返回Workers界面，点击KV设置命名空间，添加两个命名空间：`KV`、`BUCKET`（可修改），回到Worker的设置页绑定命名空间，注意变量名称必须是`KV` 、`BUCKET`
+5. （可选）修改Worker的域名/路由
+
+#### 配置参数说明：
+
+**ASSET_URL** 修改为Worker的域名，如用自定义域名也要改成对应的。
+
+**Config** clone是否使用cnpm，项目文件是否使用jsDeliver的开关，1开，0关。
+
+**PREFIX** 前缀，**一般不用改**，默认（根路径情况为"/"），如果自定义路由为example.com/gh/*，请将PREFIX改为 '/gh/'，注意，少一个杠都会错！
+
+#### 域名修改说明：
+
+如果有自己的域名，可以给CDN和API服务分配分配到两个子域名中。使用CloudFlare做域名的DNS服务器之后，按下表设置DNS：
+
+| 类型 | 名称 | 内容    |
+| ---- | ---- | ------- |
+| A    | api  | 8.8.8.8 |
+| A    | cdn  | 8.8.8.8 |
+
+然后**域名设置页找到Workers**，添加路由，路由格式：
+
+```
+api.upup.cool/*
+cdn.upup.cool/*
+```
 
 ## API设计
 
