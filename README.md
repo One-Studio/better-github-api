@@ -85,6 +85,21 @@ return new Response(JSON.stringify({ pathname }), {
 | /`仓库主`/`仓库名`/latest/info                           | 获取该仓库的最新的信息，包括版本号、更新内容、精简的附件信息和源代码下载地址 |
 | /`仓库主`/`仓库名`/latest/&`包含`&`不包含`&`开头`&`结尾` | 获取该仓库的最新版本的附件，同时过滤附件名得到唯一附件，如&a&b&c&d代表附件名包含a、不包含d、开头为c结尾是d的附件，匹配的附件>=1个时返回400错误 |
 
+- /info 返回JSON字符串结果，设计如下
+
+| info    | 类型        | 含义      |
+| ------- | ----------- | --------- |
+| version | string      | 版本号    |
+| source  | string      | 源代码URL |
+| assets  | asset array | 附件      |
+| log     | string      | 更新日志  |
+
+| asset                | 类型   | 含义                                   |
+| -------------------- | ------ | -------------------------------------- |
+| name                 | string | 附件名                                 |
+| size                 | int    | 附件大小                               |
+| browser_download_url | string | 附件下载链接 （TODO 原始 or 加速后？） |
+
 ### /get
 
 | API示例                                               | 含义                                                         |

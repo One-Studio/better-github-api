@@ -318,15 +318,38 @@ async function getAssets(request, owner, repo, version, filter) {
 }
 
 /**
- * TODO 获取仓库的信息
+ * TODO 获取仓库的信息：版本号、更新内容、精简的附件信息和源代码下载地址
  * @param request
  * @param {string} owner
  * @param {string} repo
  * @param {string} version
- * @returns {string}
+ * @returns {Response}
  */
 async function getInfo(request, owner, repo, version) {
-  return  "https://github.com/" + owner + "/" + repo + "/archive/refs/tags/" + getVersion(owner, repo, version) + ".zip";
+  const resp = await getReleaseInfo(owner, repo, version);
+
+  //判空
+  if (resp.tag_name === '' || resp.tag_name === undefined) {
+    return new Response("failed to get info, please check your url.", {status: 400})
+  }
+
+  let assets = []
+  for (const asset of resp.assets) {
+    assets.push({
+      name: asset.name,
+      size: asset.size,
+      browser_download_url: asset.browser_download_url,
+    })
+  }
+
+  let info = {
+    version : resp.tag_name,
+    source : "https://github.com/" + owner + "/" + repo + "/archive/refs/tags/" + resp.tag_name + ".zip",
+    assets : assets,
+    log : resp.body
+  }
+
+  return new Response(JSON.stringify(info))
 }
 
 /**
@@ -336,9 +359,9 @@ async function getInfo(request, owner, repo, version) {
  * @returns {Promise<Response>}
  */
 async function repo(request, pathname) {
-  // 路径分隔 1=RepoOwner 2=RepoName 3...
+  //路径分隔 1=RepoOwner 2=RepoName 3...
   const strs = pathname.split("/");
-  // console.log(strs)
+  console.log(strs)
 
   //判空+赋值
   if (strs[1] === '' || strs[1] === undefined || strs[2] === '' || strs[2] === undefined) {
@@ -375,8 +398,8 @@ async function repo(request, pathname) {
 
   if ( (strs[3] === 'latest' && strs[4] === 'info') || (strs[3] === 'info') ) {
     //获取最新版本的信息
-    const info = await getInfo(request, owner, repo, "latest")
-    return new Response(info)
+    console.log('进入getInfo')
+    return getInfo(request, owner, repo, "latest")
   }
 
   //指定标签的5种情况
@@ -397,7 +420,7 @@ async function repo(request, pathname) {
 
   if (strs[4] === 'info') {
     //获取指定标签的信息
-    return new Response(getInfo(request, owner, repo, tag_name))
+    return getInfo(request, owner, repo, tag_name)
   }
 
   if (strs[4] === 'version') {
@@ -415,11 +438,19 @@ async function repo(request, pathname) {
  * @returns {Promise<Response>}
  */
 async function get(request, pathname) {
-  const resp = await KV.get("hlae");
-  console.log(typeof(resp))
+  //路径分隔 1=键 2...
+  const key = pathname.split("/")[1];
+  //处理空值
+  if (key === '' || key === undefined) {
+    return new Response("no key is found, check input.", {status: 400});
+  }
+
+  //从KV命名空间获取数据
+  const resp = await KV.get(key);
+  // console.log(typeof(resp))
   const value = JSON.parse(resp);
   const repo = value.repo;
-  const filter = value.filter;
+  const filter = value.filter;  //TODO 检查请求最后一个有没有filter，有就替换KV里的
   const info = value.info;
   const zh = info.zh_CN;
 
@@ -475,17 +506,17 @@ async function handleRequest(request) {
 
   //使用KV键值对的简写访问仓库信息
   if (pathname.startsWith("/get")) {
-    return get(request, pathname)
+    return get(request, pathname.replace("/repo", ""))
   }
 
   //获取已缓存的最新版本信息
   if (pathname.startsWith("/bucket")) {
-    return bucket(request, pathname)
+    return bucket(request, pathname.replace("/repo", ""))
   }
 
   //提交get的快速键值对，需要Auth认证
   if (pathname.startsWith("/submit")) {
-    return submit(request, pathname)
+    return submit(request, pathname.replace("/repo", ""))
   }
 
   return Response.redirect("https://upup.cool", 302);
