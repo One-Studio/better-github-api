@@ -143,6 +143,18 @@ filter用`&`分隔的各个部分含义
 {"repo": "advancedfx/advancedfx","filter": "&HLAE_Setup&&&.exe","info": {"zh_CN": "hlae的exe安装器","zh_TW": "hlae的exe安裝器"}}
 ```
 
+csdm
+
+```
+{"repo": "akiver/CSGO-Demos-Manager","filter": "&&&&.zip","info": {"zh_CN": "CSGO录像观看工具"}}
+```
+
+hlae-studio
+
+```
+{"repo": "One-Studio/HLAE-Studio","filter": "&HLAE-Studio&&&.exe","info": {"zh_CN": "CSGO录像观看工具"}}
+```
+
 之后使用URL如`https://api.upup.cool/get/hlae`即可直接下载hlae的最新zip安装包，同时包含CDN服务，避免了很多访问速度的问题。
 
 ### /bucket （未完成）
@@ -185,6 +197,18 @@ https://github.com/One-Studio/HLAE-Studio/archive/refs/heads/main.zip
 | x265           |                                                     |
 | one-encoder    |                                                     |
 |                |                                                     |
+
+ffmpeg
+
+Ffmpeg-win
+
+ffmpeg-win-x64-git
+
+```
+{"repo": "GyanD/codexffmpeg","filter": "&&&&full_build.7z","info": {"zh_CN": "FFMPEG Windows x86 64位 Gyan完整库编译"}}
+```
+
+架构处 x64 ia32 arm64 ...
 
 | ffmpeg | arch 默认amd64   | 默认git | win64特有 默认full |
 | ------ | ---------------- | ------- | ------------------ |
