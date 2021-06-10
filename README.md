@@ -57,7 +57,7 @@
 | 获取[advancedfx](https://github.com/advancedfx/advancedfx)仓库的最新版本号v2.115.0的HLAE_Setup.exe安装器 | https://api.upup.cool/repo/advancedfx/advancedfx/v2.115.0/&HLAE_Setup.exe |
 | 获取本仓库最新源代码                                         | https://api.upup.cool/repo/One-Studio/better-github-api/source |
 | 获取本仓库最新简化信息                                       | https://api.upup.cool/repo/One-Studio/better-github-api/info |
-| 获取...上述zip压缩包，使用KV键值对预先存好的信息             | https://api.upup.cool/get/hlae                               |
+| 获取...上述zip压缩包，使用KV键值对[预先存好的信息](##/get)   | https://api.upup.cool/get/hlae                               |
 | 获取[advancedfx](https://github.com/advancedfx/advancedfx)仓库的最新版本号 | https://api.upup.cool/get/hlae/version                       |
 
 ## 部署
