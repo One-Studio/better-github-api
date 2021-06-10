@@ -212,10 +212,7 @@ function getJsonLength(jsonData){
  * @returns {Promise<Response>}
  */
 async function list(request, pathname) {
-  return fetch(
-      // 列举BUCKET所有键值对
-      "https://upup.cool"
-  );
+  return new Response("format is corrected, but this api is not implemented currently.", {status: 200})
 }
 
 /**
@@ -226,8 +223,10 @@ async function list(request, pathname) {
  * @returns {Promise<any>}
  */
 async function getReleaseInfo(owner, repo, version) {
+  //Github API请求URL
   let req = "https://api.github.com/repos/" + owner + "/" + repo + "/releases";
 
+  //根据请求的版本完善URL
   if (version === "latest") {
     req += "/latest";
   } else {
@@ -252,8 +251,9 @@ async function getReleaseInfo(owner, repo, version) {
  * @returns {string}
  */
 async function getVersion(owner, repo, version) {
+  //先获取Release信息
   const resp = await getReleaseInfo(owner, repo, version);
-  // const resp = JSON.parse(info)
+  //tag_name即版本号
   return  resp.tag_name;
 }
 
@@ -266,6 +266,7 @@ async function getVersion(owner, repo, version) {
  * @returns {Response}
  */
 async function getSource(request, owner, repo, version) {
+  //获取版本号
   const ver = await getVersion(owner, repo, version)
   // console.log(ver)
   return  cdnHandler(request, "https://github.com/" + owner + "/" + repo + "/archive/refs/tags/" + ver + ".zip")
@@ -281,11 +282,15 @@ async function getSource(request, owner, repo, version) {
  * @returns {Response} TODO 统一返回格式
  */
 async function getAssets(request, owner, repo, version, filter) {
+  //获取release信息
   const resp = await getReleaseInfo(owner, repo, version);
+
+  //附件为空
   if (getJsonLength(resp.assets) === 0) {
     return new Response("failed to find assets.", {status: 400})
   }
 
+  //未设置filter过滤器，附件只有一个则返回结果
   if (!filter) {
     if (getJsonLength(resp.assets) === 1) {
       return cdnHandler(request, resp.assets[0].browser_download_url);
@@ -294,8 +299,10 @@ async function getAssets(request, owner, repo, version, filter) {
     }
   }
 
+  //有filter时，提取 include exclude start end 4个过滤器
   const flt = filter.split("&")
 
+  //使用filter遍历所有附件
   let target, count = 0;
   for (const asset of resp.assets) {
     const name = asset.name
@@ -308,11 +315,13 @@ async function getAssets(request, owner, repo, version, filter) {
       count++;
     }
 
+    //超过一个匹配结果返回错误
     if ( count > 1 ) {
       return new Response("failed to handle multiple assets matched with filter: " + flt, {status: 400})
     }
   }
 
+  //无匹配结果返回错误
   if (count <= 0) {
     return new Response("failed to find any matched assets with filter.", {status: 400})
   }
@@ -330,6 +339,7 @@ async function getAssets(request, owner, repo, version, filter) {
  * @returns {Response}
  */
 async function getInfo(request, owner, repo, version) {
+  //获取Release信息
   const resp = await getReleaseInfo(owner, repo, version);
 
   //判空
@@ -337,6 +347,7 @@ async function getInfo(request, owner, repo, version) {
     return new Response("failed to get info, please check your url.", {status: 400})
   }
 
+  //附件字段精简
   let assets = []
   for (const asset of resp.assets) {
     assets.push({
@@ -346,6 +357,7 @@ async function getInfo(request, owner, repo, version) {
     })
   }
 
+  //信息聚合
   let info = {
     version : resp.tag_name,
     source : "https://github.com/" + owner + "/" + repo + "/archive/refs/tags/" + resp.tag_name + ".zip",
@@ -353,6 +365,7 @@ async function getInfo(request, owner, repo, version) {
     log : resp.body
   }
 
+  //返回Json格式的字符串
   return new Response(JSON.stringify(info))
 }
 
@@ -373,9 +386,8 @@ async function repo(request, pathname) {
   }
   const owner = strs[1], repo = strs[2];
 
-  //版本号
+  //获取最新版的唯一附件
   if( (strs[3] === '' || strs[3] === undefined || strs[3] === 'latest') && (strs[4] === '' || strs[4] === undefined) ){
-    //获取最新版的唯一附件
     return getAssets(request, owner, repo, "latest", "")
   }
 
@@ -389,49 +401,52 @@ async function repo(request, pathname) {
     return getAssets(request, owner, repo, "latest", strs[4]);
   }
 
+  //获取最新版本的版本号
   if ( (strs[3] === 'latest' && strs[4] === 'version') || (strs[3] === 'version') ) {
-    //获取最新版本的版本号
     const version = await getVersion(owner, repo, "latest")
     return new Response(version)
   }
 
+  //获取最新版本的源码
   if ( (strs[3] === 'latest' && strs[4] === 'source') || (strs[3] === 'source') ) {
-    //获取最新版本的源码
     return getSource(request, owner, repo, "latest")
   }
 
+  //获取最新版本的信息
   if ( (strs[3] === 'latest' && strs[4] === 'info') || (strs[3] === 'info') ) {
-    //获取最新版本的信息
     console.log('进入getInfo')
     return getInfo(request, owner, repo, "latest")
   }
 
   //指定标签的5种情况
   const tag_name = strs[3]
+
+  //获取指定标签的唯一附件
   if (strs[4] === '' || strs[4] === undefined) {
-    //获取指定标签的唯一附件
     return getAssets(request, owner, repo, tag_name, "");
   }
 
+  //同上且加入filter
   if (strs[4].startsWith("&")) {
     return getAssets(request, owner, repo,  tag_name, strs[4]);
   }
 
+  //获取指定标签的源代码
   if (strs[4] === 'source') {
-    //获取指定标签的源代码
     return getSource(request, owner, repo, tag_name)
   }
 
+  //获取指定标签的信息
   if (strs[4] === 'info') {
-    //获取指定标签的信息
     return getInfo(request, owner, repo, tag_name)
   }
 
+  //获取指定标签的版本 P.S. 这个请求无意义，返回错误
   if (strs[4] === 'version') {
-    //获取指定标签的版本 P.S. 这个请求无意义
     return new Response("meaningless request for a version's version.", {status: 400});
   }
 
+  //没有匹配的情况，返回错误
   return new Response("invalid input.", {status: 400});
 }
 
@@ -444,8 +459,8 @@ async function repo(request, pathname) {
 async function get(request, pathname) {
   //路径分隔 1=键 2...
   const strs = pathname.split("/")
-  console.log(strs)
   const key = strs[1];
+  
   //处理空值
   if (key === '' || key === undefined) {
     return new Response("no key is found, check input.", {status: 400});
@@ -453,13 +468,10 @@ async function get(request, pathname) {
 
   //从KV命名空间获取数据
   const resp = await KV.get("hlae");
-  console.log(resp)
-
   const value = JSON.parse(resp);
   const info = value.info;
-  // const zh = info.zh_CN;
-
   const repo_info = value.repo;
+  // const zh = info.zh_CN;
 
   //检查请求中有没有filter，有就替换KV里的
   let filter;
@@ -469,9 +481,8 @@ async function get(request, pathname) {
     filter = value.filter;
   }
 
-
+  //生成符合repo方法格式的请求参数
   const req = "/" + repo_info + "/" + strs.slice(2, strs.length).join("/") + "/" + filter;
-  console.log(req)
   return repo(request, req);
 }
 
