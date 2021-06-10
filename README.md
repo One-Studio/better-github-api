@@ -83,7 +83,7 @@ return new Response(JSON.stringify({ pathname }), {
 | /`仓库主`/`仓库名`/latest/version                        | 获取该仓库的最新的版本号                                     |
 | /`仓库主`/`仓库名`/latest/source                         | 获取该仓库的最新的源代码下载地址                             |
 | /`仓库主`/`仓库名`/latest/info                           | 获取该仓库的最新的信息，包括版本号、更新内容、精简的附件信息和源代码下载地址 |
-| /`仓库主`/`仓库名`/latest/?`包含`&`不包含`&`开头`&`结尾` | 获取该仓库的最新版本的附件，同时过滤附件名得到唯一附件，如a&b&c&d代表附件名包含a、不包含d、开头为c结尾是d的附件，匹配的附件>=1个时返回400错误 |
+| /`仓库主`/`仓库名`/latest/&`包含`&`不包含`&`开头`&`结尾` | 获取该仓库的最新版本的附件，同时过滤附件名得到唯一附件，如&a&b&c&d代表附件名包含a、不包含d、开头为c结尾是d的附件，匹配的附件>=1个时返回400错误 |
 
 ### /get
 
@@ -94,14 +94,14 @@ return new Response(JSON.stringify({ pathname }), {
 | /get/`仓库简称`/latest/version                        | 同repo处说明                                                 |
 | /get/`仓库简称`/latest/source                         | 同repo处说明                                                 |
 | /get/`仓库简称`/latest/info                           | 同repo处说明                                                 |
-| /get/`仓库简称`/latest/?`包含`&`不包含`&`开头`&`结尾` | 同repo处说明，只是用这里给的filter                           |
+| /get/`仓库简称`/latest/&`包含`&`不包含`&`开头`&`结尾` | 同repo处说明，只是用这里给的filter                           |
 
 至于KV里如何存`简称-全称`的对应关系
 
 | 键     | 类型   | 例子                                                     |
 | ------ | ------ | -------------------------------------------------------- |
 | repo   | string | advancedfx/advancedfx                                    |
-| filter | string | hlae&&&.zip                                              |
+| filter | string | &hlae&&&.zip                                             |
 | info   | object | {"zh_CN": "hlae的zip安装包", "zh_TW": "hlae的zip安裝器"} |
 
 filter用`&`分隔的各个部分含义
@@ -118,7 +118,7 @@ filter用`&`分隔的各个部分含义
 ```
 {
 	"repo": "advancedfx/advancedfx",
-	"filter": "hlae&&&.zip",
+	"filter": "&hlae&&&.zip",
 	"info": {
 		"zh_CN": "hlae的zip安装包",
 		"zh_TW": "hlae的zip安裝包"
@@ -151,21 +151,21 @@ https://github.com/One-Studio/HLAE-Studio/archive/refs/heads/main.zip
 
 ## 键值对内容（待定、未完成）
 
-| 键             | 值                                                 |
-| -------------- | -------------------------------------------------- |
-| hlae           | advancedfx/advancedfx  hlae%%%.zip                 |
-| hlae-installer | advancedfx/advancedfx  HLAE_Setup.exe              |
-| csdm           | akiver/CSGO-Demos-Manager  csgo-demos-manager .exe |
-| ffmpeg-mac     |                                                    |
-| ffmpeg-mac     |                                                    |
-| ffmpeg-linux   |                                                    |
-| ffmpeg-linux   |                                                    |
-| ffmpeg-win     |                                                    |
-| ffmpeg-win     |                                                    |
-| x264           |                                                    |
-| x265           |                                                    |
-| one-encoder    |                                                    |
-|                |                                                    |
+| 键             | 值                                                  |
+| -------------- | --------------------------------------------------- |
+| hlae           | advancedfx/advancedfx  &hlae%%%.zip                 |
+| hlae-installer | advancedfx/advancedfx  &HLAE_Setup.exe              |
+| csdm           | akiver/CSGO-Demos-Manager  &csgo-demos-manager .exe |
+| ffmpeg-mac     |                                                     |
+| ffmpeg-mac     |                                                     |
+| ffmpeg-linux   |                                                     |
+| ffmpeg-linux   |                                                     |
+| ffmpeg-win     |                                                     |
+| ffmpeg-win     |                                                     |
+| x264           |                                                     |
+| x265           |                                                     |
+| one-encoder    |                                                     |
+|                |                                                     |
 
 | ffmpeg | arch 默认amd64   | 默认git | win64特有 默认full |
 | ------ | ---------------- | ------- | ------------------ |
