@@ -26,7 +26,7 @@
 
 ### 优势
 
-- 使用 Jsdelivr 等CDN工具加速资源下载，Release文件加速无大小限制；
+- 使用 Jsdelivr 等**CDN加速**资源下载，Release文件加速无大小限制；
 - 提供简明的API，可作为程序分发的固定下载链接；
 - 开销低，每个账号CloudFlare Workers 免费请求额度为 **~1k次/小时** **~100k次/天**，5$付费版 **~10m次/天**，且可开多个账号。
 
@@ -43,11 +43,22 @@
 
 ## 使用
 
-如果有配置好的API服务可以直接使用，API[参考这里](##API设计)，这里给出可用的域名，请尽量自己搭建减少这里的压力，毕竟是免费的：
+如果有配置好的API服务可以直接使用，API[参考这里](##API设计)，这里给出可用的域名，请尽量自己搭建减少这里的压力，毕竟是免费的，也可[提交你的域名](https://github.com/One-Studio/better-github-api/issues)：
 
 - https://api.upup.cool
+- ... 
 
-> 也可以把你搭好的地址分享出来提交到issue中
+下面是使用举例：
+
+| 含义                                                         | URL                                                          |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 获取[advancedfx](https://github.com/advancedfx/advancedfx)仓库的最新版本号 | https://api.upup.cool/repo/advancedfx/advancedfx/version     |
+| 获取[advancedfx](https://github.com/advancedfx/advancedfx)仓库的最新版本包含hlae字符串的zip压缩包 | https://api.upup.cool/repo/advancedfx/advancedfx/&hlae&&&.zip |
+| 获取[advancedfx](https://github.com/advancedfx/advancedfx)仓库的最新版本号v2.115.0的HLAE_Setup.exe安装器 | https://api.upup.cool/repo/advancedfx/advancedfx/v2.115.0/&HLAE_Setup.exe |
+| 获取本仓库最新源代码                                         | https://api.upup.cool/repo/One-Studio/better-github-api/source |
+| 获取本仓库最新简化信息                                       | https://api.upup.cool/repo/One-Studio/better-github-api/info |
+| 获取...上述zip压缩包，使用KV键值对预先存好的信息             | https://api.upup.cool/get/hlae                               |
+| 获取[advancedfx](https://github.com/advancedfx/advancedfx)仓库的最新版本号 | https://api.upup.cool/get/hlae/version                       |
 
 ## 部署
 
