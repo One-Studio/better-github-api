@@ -1,6 +1,6 @@
 <h1 align="center">better-github-api</h1>
 
-<p align="">Better, Eazy, Access Anywhere</p>
+<p align="center">Better, Eazy, Access Anywhere</p>
 
    [![stars](https://img.shields.io/github/stars/One-Studio/better-github-api.svg?style=flat&color=green)](https://github.com/One-Studio/better-github-api
 )
@@ -12,11 +12,25 @@
 
 ## 介绍
 
-基于 [gh-proxy](https://github.com/hunshcn/gh-proxy) + [jsdelivr](https://www.jsdelivr.com/) + [cnpmjs](https://cnpmjs.org/) + [cloudflare workers](https://workers.cloudflare.com)  的 GitHub Serverless API 工具。
+基于 [gh-proxy](https://github.com/hunshcn/gh-proxy) + [Jsdelivr](https://www.jsdelivr.com/) + [cnpmjs](https://cnpmjs.org/) + [cloudflare workers](https://workers.cloudflare.com)  的 GitHub Serverless API 工具。
 
-cdn.js是原项目单纯的CDN加速功能
+**cdn.js**：仅含 gh-proxy 中的CDN功能，URL后加上GitHub各种资源（源码、Release文件等）的下载链接跳转为对应CDN加速的链接。
 
-api.js是本项目的核心，提供API服务
+**api.js**：本项目的核心，提供API服务，部署时只用修改最开始的几个变量参数。
+
+### 问题
+
+- GitHub资源下载龟速，你我都有办法，但是用户没有，而分发存储到其他地方也可能会增加开支和麻烦。
+- GitHub的API没有办法直接获得 Release 的某个附件，如提供过滤选项在众多Assets中筛选想要的附件，**获取最新版本的某个附件**只能通过解析API进一步操作，而实际应提供一个固定、简短的API。
+- Jsdelivr很好用，可结合GitHub Actions自动搬运资源，但是有~20MB/文件限制。
+
+### 优势
+
+- 使用 Jsdelivr 等CDN工具加速资源下载，Release文件加速无大小限制；
+- 提供简明的API，可作为程序分发的固定下载链接；
+- 开销低，每个账号CloudFlare Workers 免费请求额度为 **~1k次/小时** **~100k次/天**，5$付费版 **~10m次/天**，且可开多个账号。
+
+> 如需用自己的域名，需要使用CloudFlare的DNS服务
 
 ## 路线图
 
@@ -146,23 +160,3 @@ filter用`&`分隔的各个部分含义
 
 ### /submit（未完成）
 
-----
-
-以下是原项目的相关内容
-
-## 使用
-
-- 分支源码：https://github.com/hunshcn/project/archive/master.zip
-- release源码：https://github.com/hunshcn/project/archive/v0.1.0.tar.gz
-- release文件：https://github.com/hunshcn/project/releases/download/v0.1.0/example.zip
-- 分支文件：https://github.com/hunshcn/project/blob/master/filename
-- commit文件：https://github.com/hunshcn/project/blob/1111111111111111111111111111/filename
-- gist：https://gist.githubusercontent.com/cielpy/351557e6e465c12986419ac5a4dd2568/raw/cmd.py
-
-
-
-## 链接
-
-## 参考
-
-## 捐赠
