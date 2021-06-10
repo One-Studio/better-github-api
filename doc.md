@@ -41,6 +41,24 @@ return new Response(JSON.stringify({ pathname }), {
 
 ## 待定内容&草稿
 
+键为`hlae-installer`
+
+```
+{"repo": "advancedfx/advancedfx","filter": "&HLAE_Setup&&&.exe","info": {"zh_CN": "hlae的exe安装器","zh_TW": "hlae的exe安裝器"}}
+```
+
+csdm
+
+```
+{"repo": "akiver/CSGO-Demos-Manager","filter": "&&&&.zip","info": {"zh_CN": "CSGO录像观看工具"}}
+```
+
+hlae-studio
+
+```
+{"repo": "One-Studio/HLAE-Studio","filter": "&HLAE-Studio&&&.exe","info": {"zh_CN": "CSGO录像观看工具"}}
+```
+
 
 
 ## 键值对内容（待定、未完成）
