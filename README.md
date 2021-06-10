@@ -4,7 +4,7 @@
 
 <p align="center"><img src="https://img.shields.io/github/stars/One-Studio/better-github-api.svg?style=flat&color=green"  onclick="https://github.com/One-Studio/better-github-api'" />
 <img src="https://img.shields.io/github/forks/One-Studio/better-github-api.svg?style=flat&color=critical"  onclick="https://github.com/One-Studio/better-github-api'" />
-<img src="https://img.shields.io/badge/license-MIT%203-orange.svg?style=flat"  />
+<img src="https://img.shields.io/badge/license-MIT-orange.svg?style=flat"  />
 <img src="https://img.shields.io/badge/$-donate-ff69b4.svg?style=flat"  onclick="https://github.com/One-Studio/better-github-api#捐赠'" /></p>
 
 ## 介绍
