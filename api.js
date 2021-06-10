@@ -460,12 +460,15 @@ async function repo(request, pathname) {
 async function get(request, pathname) {
   //路径分隔 1=键 2...
   const strs = pathname.split("/")
-  const key = strs[1];
+  let key = strs[1];
 
   //处理空值
   if (key === '' || key === undefined) {
     return new Response("no key is found, check input.", {status: 400});
   }
+
+  //转换成小写
+  key = key.toLowerCase()
 
   //从KV命名空间获取数据
   const resp = await KV.get(key);
@@ -483,7 +486,7 @@ async function get(request, pathname) {
   }
 
   //提取get/键/...后面的参数
-  let param = strs.slice(2, strs.length-1).join("/")
+  let param = strs.slice(2, strs.length).join("/")
   if (param) param = "/" + param
 
   //生成符合repo方法格式的请求参数
