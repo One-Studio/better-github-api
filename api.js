@@ -68,6 +68,43 @@ function newUrl(urlStr) {
   }
 }
 
+
+/**
+ *
+ * @param {URL} urlObj
+ * @param {RequestInit} reqInit
+ */
+async function proxy(urlObj, reqInit, rawLen) {
+  const res = await fetch(urlObj.href, reqInit);
+  const resHdrOld = res.headers;
+  const resHdrNew = new Headers(resHdrOld);
+
+  // verify
+  if (rawLen) {
+    const newLen = resHdrOld.get("content-length") || "";
+    const badLen = rawLen !== newLen;
+
+    if (badLen) {
+      return makeRes(res.body, 400, {
+        "--error": `bad len: ${newLen}, except: ${rawLen}`,
+        "access-control-expose-headers": "--error",
+      });
+    }
+  }
+  const status = res.status;
+  resHdrNew.set("access-control-expose-headers", "*");
+  resHdrNew.set("access-control-allow-origin", "*");
+
+  resHdrNew.delete("content-security-policy");
+  resHdrNew.delete("content-security-policy-report-only");
+  resHdrNew.delete("clear-site-data");
+
+  return new Response(res.body, {
+    status,
+    headers: resHdrNew,
+  });
+}
+
 /**
  * @param {Request} req
  * @param {string} pathname
@@ -100,7 +137,7 @@ function httpHandler(req, pathname) {
     redirect: "follow",
     body: req.body,
   };
-  return proxy(urlObj, reqInit, rawLen, 0);
+  return proxy(urlObj, reqInit, rawLen);
 }
 
 /**
@@ -152,45 +189,17 @@ async function cdnHandler(req, path) {
   }
 }
 
-/**
- *
- * @param {URL} urlObj
- * @param {RequestInit} reqInit
- */
-async function proxy(urlObj, reqInit, rawLen) {
-  const res = await fetch(urlObj.href, reqInit);
-  const resHdrOld = res.headers;
-  const resHdrNew = new Headers(resHdrOld);
-
-  // verify
-  if (rawLen) {
-    const newLen = resHdrOld.get("content-length") || "";
-    const badLen = rawLen !== newLen;
-
-    if (badLen) {
-      return makeRes(res.body, 400, {
-        "--error": `bad len: ${newLen}, except: ${rawLen}`,
-        "access-control-expose-headers": "--error",
-      });
-    }
-  }
-  const status = res.status;
-  resHdrNew.set("access-control-expose-headers", "*");
-  resHdrNew.set("access-control-allow-origin", "*");
-
-  resHdrNew.delete("content-security-policy");
-  resHdrNew.delete("content-security-policy-report-only");
-  resHdrNew.delete("clear-site-data");
-
-  return new Response(res.body, {
-    status,
-    headers: resHdrNew,
-  });
-}
-
 //////////////////////////////////////////
 //    以下是better-github-api的核心代码    //
 //////////////////////////////////////////
+
+function getJsonLength(jsonData){
+  var jsonLength = 0;
+  for(var item in jsonData){
+    jsonLength++;
+  }
+  return jsonLength;
+}
 
 /**
  * 列出当前的键值对信息
@@ -228,7 +237,7 @@ async function getReleaseInfo(owner, repo, version) {
       "Content-Type": "application/json",
       "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36",
     },
-  }).then((response) => response.json()); // 解析结果为JSON
+  }).then(response => response.json()) // 解析结果为JSON;
 }
 
 /**
@@ -240,6 +249,7 @@ async function getReleaseInfo(owner, repo, version) {
  */
 async function getVersion(owner, repo, version) {
   const resp = await getReleaseInfo(owner, repo, version);
+  // const resp = JSON.parse(info)
   return  resp.tag_name;
 }
 
@@ -249,10 +259,10 @@ async function getVersion(owner, repo, version) {
  * @param {string} owner
  * @param {string} repo
  * @param {string} version
- * @returns {string}
+ * @returns {Response}
  */
-async function getSourceURL(request, owner, repo, version) {
-  return  "https://github.com/" + owner + "/" + repo + "/archive/refs/tags/" + getVersion(owner, repo, version) + ".zip";
+async function getSource(request, owner, repo, version) {
+  return  cdnHandler(request, "https://github.com/" + owner + "/" + repo + "/archive/refs/tags/" + getVersion(owner, repo, version) + ".zip")
 }
 
 /**
@@ -266,26 +276,35 @@ async function getSourceURL(request, owner, repo, version) {
  */
 async function getAssets(request, owner, repo, version, filter) {
   const resp = await getReleaseInfo(owner, repo, version);
-
-  if (resp.assets.length === 0) {
+  // console.log(resp)
+  // const resp = JSON.parse(info)
+  if (getJsonLength(resp.assets) === 0) {
     return new Response("failed to find assets.", {status: 400})
   }
 
   if (!filter) {
-    if (resp.assets.length === 1) {
+    if (getJsonLength(resp.assets) === 1) {
       return cdnHandler(request, resp.assets[0].browser_download_url);
     } else {
       return new Response("failed to handle more than 1 asset without filter.", {status: 400})
     }
   }
 
-  filter = filter.replace("?", "")
   const flt = filter.split("&")
+  console.log(flt)
 
   let target, count = 0;
   for (const asset of resp.assets) {
-    if ( asset.name.contains(flt[0] && !asset.name.contains(flt[1])) &&
-         asset.name.startsWith(flt[2]) && asset.name.endsWith(flt[3]) ) {
+    const name = asset.name
+    // console.log(name.search(flt[1]) !== -1)
+    // console.log(name.search(flt[2]) === -1)
+    // console.log(name.startsWith(flt[3]))
+    // console.log(name.endsWith(flt[4]))
+
+    if ( (flt[1] === '' || name.search(flt[1]) !== -1 ) &&
+         (flt[2] === '' || name.search(flt[2]) === -1 ) &&
+         (flt[3] === '' || name.startsWith(flt[3]) ) &&
+         (flt[4] === '' || name.endsWith(flt[4]) ) ) {
       target = asset.browser_download_url;
       count++;
     }
@@ -322,8 +341,9 @@ async function getInfo(request, owner, repo, version) {
  * @returns {Promise<Response>}
  */
 async function repo(request, pathname) {
-  // 路径分隔后0为空 1=RepoOwner 2=RepoName 3...
+  // 路径分隔 1=RepoOwner 2=RepoName 3...
   const strs = pathname.split("/");
+  console.log(strs)
 
   //判空+赋值
   if (strs[1] === '' || strs[1] === undefined || strs[2] === '' || strs[2] === undefined) {
@@ -337,10 +357,14 @@ async function repo(request, pathname) {
     return getAssets(request, owner, repo, "latest", "")
   }
 
-  if ( (strs[3].startsWith("?") && (strs[4] === '' || strs[4] === undefined)) || (strs[3] === 'latest' && strs[4].startsWith("?")) ) {
-    //获取过滤后的唯一附件
-    const filter = strs.split("?")[1]
-    return getAssets(owner,repo, "latest", filter);
+  //获取过滤后的唯一附件
+  if ( strs[3].startsWith("&") && (strs[4] === '' || strs[4] === undefined) ) {
+    return getAssets(request, owner, repo, "latest", strs[3]);
+  }
+
+  //同上
+  if ( (strs[3] === 'latest' && strs[4].startsWith("&")) ) {
+    return getAssets(request, owner, repo, "latest", strs[4]);
   }
 
   if ( (strs[3] === 'latest' && strs[4] === 'version') || (strs[3] === 'version') ) {
@@ -350,7 +374,7 @@ async function repo(request, pathname) {
 
   if ( (strs[3] === 'latest' && strs[4] === 'source') || (strs[3] === 'source') ) {
     //获取最新版本的源码
-    return cdnHandler(request, getSourceURL(request, owner, repo, "latest"))
+    return getSource(request, owner, repo, "latest")
   }
 
   if ( (strs[3] === 'latest' && strs[4] === 'info') || (strs[3] === 'info') ) {
@@ -365,14 +389,13 @@ async function repo(request, pathname) {
     return getAssets(request, owner, repo, tag_name, "");
   }
 
-  if (strs[4].startsWith("?")) {
-    const filter = strs[4].split("?")[1]
-    return getAssets(owner,repo, "latest", filter);
+  if (strs[4].startsWith("&")) {
+    return getAssets(request, owner, repo, "latest", strs[4]);
   }
 
   if (strs[4] === 'source') {
     //获取指定标签的源代码
-    return cdnHandler(request, getSourceURL(request, owner, repo, tag_name))
+    return cdnHandler(request, getSource(request, owner, repo, tag_name))
   }
 
   if (strs[4] === 'info') {
@@ -440,37 +463,33 @@ async function handleRequest(request) {
 
   //空请求返回主页
   if (pathname === '' || pathname === '/') {
-    return fetch(
-        "https://upup.cool"
-    );
+    return Response.redirect("https://upup.cool", 302);
   }
 
   //列出当前的键值对信息
   if (pathname.startsWith("/list")) {
-    return list(request, pathname.replace("/list",""))
+    return list(request, pathname)
   }
 
   //访问GitHub仓库信息
   if (pathname.startsWith("/repo")) {
-    return repo(request, pathname.replace("/repo",""))
+    return repo(request, pathname.replace("/repo", ""))
   }
 
   //使用KV键值对的简写访问仓库信息
   if (pathname.startsWith("/get")) {
-    return get(request, pathname.replace("/get",""))
+    return get(request, pathname)
   }
 
   //获取已缓存的最新版本信息
   if (pathname.startsWith("/bucket")) {
-    return bucket(request, pathname.replace("/bucket",""))
+    return bucket(request, pathname)
   }
 
   //提交get的快速键值对，需要Auth认证
   if (pathname.startsWith("/submit")) {
-    return submit(request, pathname.replace("/submit",""))
+    return submit(request, pathname)
   }
 
-  return fetch(
-      "https://upup.cool"
-  );
+  return Response.redirect("https://upup.cool", 302);
 }
