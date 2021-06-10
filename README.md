@@ -1,18 +1,14 @@
 # better-github-api
 
-> 未完成 by Purp1e
-
-## 简介
-
 基于gh-proxy和cloudflare workers提供github的更好的Serverless API服务，简单易用开销低，速度有保障（CDN）。
 
-----
-
-以下是设计草稿，非最终版
+## 简介
 
 cdn.js是原项目单纯的CDN加速功能
 
 api.js是本项目的核心，提供API服务
+
+## 当前进度
 
 ## 常用方法踩坑
 
@@ -141,6 +137,12 @@ filter用`&`分隔的各个部分含义
 }
 ```
 
+键为`hlae-installer`
+
+```
+{"repo": "advancedfx/advancedfx","filter": "&HLAE_Setup&&&.exe","info": {"zh_CN": "hlae的exe安装器","zh_TW": "hlae的exe安裝器"}}
+```
+
 之后使用URL如`https://api.upup.cool/get/hlae`即可直接下载hlae的最新zip安装包，同时包含CDN服务，避免了很多访问速度的问题。
 
 ### /bucket （未完成）
@@ -159,6 +161,8 @@ https://api.upup.cool/get/hlae
 https://github.com/仓库名/archive/refs/tags/版本号.zip  //source下载
 https://github.com/One-Studio/HLAE-Studio/archive/refs/heads/main.zip
 ```
+
+
 
 ### /submit（未完成）
 

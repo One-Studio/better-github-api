@@ -12,8 +12,8 @@
 //Workers部署的地址、链接
 const ASSET_URL = "api.upup.cool";
 
-//主页 请求无参数时跳转主页
-const HOME_PAGE = "upup.cool";
+//主页 请求无参数时跳转主页 要求有https://
+const HOME_PAGE = "https://upup.cool";
 
 //认证？待定
 const AUTH = "";
@@ -284,6 +284,7 @@ async function getSource(request, owner, repo, version) {
 async function getAssets(request, owner, repo, version, filter) {
   //获取release信息
   const resp = await getReleaseInfo(owner, repo, version);
+  console.log(resp)
 
   //附件为空
   if (getJsonLength(resp.assets) === 0) {
@@ -308,9 +309,9 @@ async function getAssets(request, owner, repo, version, filter) {
     const name = asset.name
 
     if ( (flt[1] === '' || name.search(flt[1]) !== -1 ) &&
-         (flt[2] === '' || name.search(flt[2]) === -1 ) &&
-         (flt[3] === '' || name.startsWith(flt[3]) ) &&
-         (flt[4] === '' || name.endsWith(flt[4]) ) ) {
+        (flt[2] === '' || name.search(flt[2]) === -1 ) &&
+        (flt[3] === '' || name.startsWith(flt[3]) ) &&
+        (flt[4] === '' || name.endsWith(flt[4]) ) ) {
       target = asset.browser_download_url;
       count++;
     }
@@ -460,14 +461,14 @@ async function get(request, pathname) {
   //路径分隔 1=键 2...
   const strs = pathname.split("/")
   const key = strs[1];
-  
+
   //处理空值
   if (key === '' || key === undefined) {
     return new Response("no key is found, check input.", {status: 400});
   }
 
   //从KV命名空间获取数据
-  const resp = await KV.get("hlae");
+  const resp = await KV.get(key);
   const value = JSON.parse(resp);
   const info = value.info;
   const repo_info = value.repo;
@@ -481,8 +482,14 @@ async function get(request, pathname) {
     filter = value.filter;
   }
 
+  //提取get/键/...后面的参数
+  let param = strs.slice(2, strs.length-1).join("/")
+  if (param) param = "/" + param
+
   //生成符合repo方法格式的请求参数
-  const req = "/" + repo_info + "/" + strs.slice(2, strs.length).join("/") + "/" + filter;
+  const req = "/" + repo_info + param + "/" + filter;
+  console.log(req)
+
   return repo(request, req);
 }
 
