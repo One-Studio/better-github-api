@@ -308,10 +308,10 @@ async function getAssets(request, owner, repo, version, filter) {
   for (const asset of resp.assets) {
     const name = asset.name
 
-    if ( (flt[1] === '' || name.search(flt[1]) !== -1 ) &&
-        (flt[2] === '' || name.search(flt[2]) === -1 ) &&
-        (flt[3] === '' || name.startsWith(flt[3]) ) &&
-        (flt[4] === '' || name.endsWith(flt[4]) ) ) {
+    if ( (flt[1] === '' || flt[1] === undefined || name.search(flt[1]) !== -1 ) &&
+        (flt[2] === '' || flt[2] === undefined || name.search(flt[2]) === -1 ) &&
+        (flt[3] === '' || flt[3] === undefined || name.startsWith(flt[3]) ) &&
+        (flt[4] === '' || flt[4] === undefined || name.endsWith(flt[4]) ) ) {
       target = asset.browser_download_url;
       count++;
     }
