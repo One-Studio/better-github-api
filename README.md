@@ -31,8 +31,8 @@
 
 ## 路线
 
-- [x] repo
-- [x] get
+- [X] repo
+- [X] get
 - [ ] bucket
 - [ ] submit
 - [ ] list
@@ -43,19 +43,20 @@
 如果有配置好的API服务可以直接使用，API[参考这里](##API设计)，这里给出可用的域名，请尽量自己搭建减少这里的压力，毕竟是免费的，也可[提交你的域名](https://github.com/One-Studio/better-github-api/issues)：
 
 - https://api.upup.cool
-- ... 
+- ...
 
 下面是使用举例：
 
-| 含义                                                         | URL                                                          |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| 获取[advancedfx](https://github.com/advancedfx/advancedfx)仓库的最新版本号 | https://api.upup.cool/repo/advancedfx/advancedfx/version     |
-| 获取[advancedfx](https://github.com/advancedfx/advancedfx)仓库的最新版本包含hlae字符串的zip压缩包 | https://api.upup.cool/repo/advancedfx/advancedfx/&hlae&&&.zip |
+
+| 含义                                                                                                     | URL                                                                       |
+| ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| 获取[advancedfx](https://github.com/advancedfx/advancedfx)仓库的最新版本号                               | https://api.upup.cool/repo/advancedfx/advancedfx/version                  |
+| 获取[advancedfx](https://github.com/advancedfx/advancedfx)仓库的最新版本包含hlae字符串的zip压缩包        | https://api.upup.cool/repo/advancedfx/advancedfx/&hlae&&&.zip             |
 | 获取[advancedfx](https://github.com/advancedfx/advancedfx)仓库的最新版本号v2.115.0的HLAE_Setup.exe安装器 | https://api.upup.cool/repo/advancedfx/advancedfx/v2.115.0/&HLAE_Setup.exe |
-| 获取本仓库最新源代码                                         | https://api.upup.cool/repo/One-Studio/better-github-api/source |
-| 获取本仓库最新简化信息                                       | https://api.upup.cool/repo/One-Studio/better-github-api/info |
-| 获取...上述zip压缩包，使用KV键值对[预先存好的信息](##/get)   | https://api.upup.cool/get/hlae                               |
-| 获取[advancedfx](https://github.com/advancedfx/advancedfx)仓库的最新版本号 | https://api.upup.cool/get/hlae/version                       |
+| 获取本仓库最新源代码                                                                                     | https://api.upup.cool/repo/One-Studio/better-github-api/source            |
+| 获取本仓库最新简化信息                                                                                   | https://api.upup.cool/repo/One-Studio/better-github-api/info              |
+| 获取...上述zip压缩包，使用KV键值对[预先存好的信息](##/get)                                               | https://api.upup.cool/get/hlae                                            |
+| 获取[advancedfx](https://github.com/advancedfx/advancedfx)仓库的最新版本号                               | https://api.upup.cool/get/hlae/version                                    |
 
 ## 部署
 
@@ -71,29 +72,23 @@
 ### API服务
 
 1. 复制项目文件中`api.js`的内容到左侧代码框，`保存并部署`；
-2. 修改 **ASSET_URL**, **Config**, **PREFI；**
-3. 修改 **HOME_PAGE**，请求不加参数时跳转到主页；
-4. 保存并部署；
-5. 返回Workers界面，点击KV设置命名空间，添加两个命名空间：`KV`、`BUCKET`（可修改），回到Worker的设置页绑定命名空间，注意变量名称必须是`KV` 、`BUCKET`；
-6. 提交KV键值对：给刚才绑定KV变量名的命名空间添加键值对（仓库简称-值）以使用get方法，[参照这里](##/get)；
-7. （可选）修改Worker的域名/路由。
+2. 修改 **HOME_PAGE**，请求不加参数时跳转到主页；
+3. 保存并部署；
+4. 返回Workers界面，点击KV设置命名空间，添加两个命名空间：`KV`、`BUCKET`（可修改），回到Worker的设置页绑定命名空间，注意变量名称必须是`KV` 、`BUCKET`；
+5. 提交KV键值对：给刚才绑定KV变量名的命名空间添加键值对（仓库简称-值）以使用get方法，[参照这里](##/get)；
+6. （可选）修改Worker的域名/路由。
 
 #### 配置参数说明：
 
-**ASSET_URL** 修改为Worker的域名，如用自定义域名也要改成对应的。
-
-> ↓一般不用改
-
-**Config** clone是否使用cnpm，项目文件是否使用jsDeliver的开关，1开，0关。
-
-**PREFIX** 前缀，，默认（根路径情况为"/"），如果自定义路由为example.com/gh/*，请将PREFIX改为 '/gh/'，注意，少一个杠都会错！
+****HOME_PAGE**，请求不加参数时跳转到主页ASSET_URL** 修改为Worker的域名，如用自定义域名也要改成对应的。
 
 #### 域名修改说明：
 
 **如果有自己的域名**，可以给CDN和API服务分配分配到两个子域名中。使用CloudFlare做域名的DNS服务器之后，按下表设置DNS：
 
+
 | 类型 | 名称 | 内容    |
-| ---- | ---- | ------- |
+| ------ | ------ | --------- |
 | A    | api  | 8.8.8.8 |
 | A    | cdn  | 8.8.8.8 |
 
@@ -110,8 +105,9 @@ KV（Key-Value）键值对：CloudFlare提供了免费1GB的键值对存储功�
 
 ### 一级API
 
+
 | 参数    | 含义                                                    |
-| ------- | ------------------------------------------------------- |
+| --------- | --------------------------------------------------------- |
 | /repo   | 获取GitHub仓库信息                                      |
 | /get    | 利用KV中已有的键值对快速获取GitHub仓库信息              |
 | /bucket | 与get类似，使用KV缓存的键值信息简化参数复杂度，加快响应 |
@@ -122,8 +118,9 @@ KV（Key-Value）键值对：CloudFlare提供了免费1GB的键值对存储功�
 
 ### /repo
 
+
 | API                                | 含义                                                         |
-| ---------------------------------- | ------------------------------------------------------------ |
+| ------------------------------------ | -------------------------------------------------------------- |
 | /`仓库主`/`仓库名`                 | 获取该仓库的最新版本的唯一附件                               |
 | /`仓库主`/`仓库名`/version         | 获取该仓库的最新版本的版本号                                 |
 | /`仓库主`/`仓库名`/source          | 获取该仓库的最新版本的源代码下载地址                         |
@@ -135,25 +132,29 @@ KV（Key-Value）键值对：CloudFlare提供了免费1GB的键值对存储功�
 | /`仓库主`/`仓库名`/`版本`/info     | 获取该仓库的给定`版本`的信息，如版本号和附件                 |
 | /`仓库主`/`仓库名`/`版本`/`过滤器` | 获取该仓库的给定`版本`的附件，同时**过滤附件名**得到唯一附件 |
 
+
 | 仓库信息 | 类型   | 示例              |
-| -------- | ------ | ----------------- |
+| ---------- | -------- | ------------------- |
 | 仓库主   | string | One-Studio        |
 | 仓库名   | string | better-github-api |
 
+
 | 版本   | 含义           | 示例     |
-| ------ | -------------- | -------- |
+| -------- | ---------------- | ---------- |
 | latest | 最新版本       | latest   |
 | 其他   | 指定的其他版本 | v2.116.0 |
 
+
 | info成员 | 类型        | 含义      |
-| -------- | ----------- | --------- |
+| ---------- | ------------- | ----------- |
 | version  | string      | 版本号    |
 | source   | string      | 源代码URL |
 | assets   | asset array | 附件      |
 | log      | string      | 更新日志  |
 
+
 | asset成员            | 类型   | 含义                                   |
-| -------------------- | ------ | -------------------------------------- |
+| ---------------------- | -------- | ---------------------------------------- |
 | name                 | string | 附件名                                 |
 | size                 | int    | 附件大小                               |
 | browser_download_url | string | 附件下载链接 （TODO 原始 or 加速后？） |
@@ -168,8 +169,9 @@ filter用`&`分隔的过滤器各个部分，**必须&开头**，格式为 &`inc
 
 > 右侧连通的空白部分&可省去。
 
+
 | 过滤器部分 | 含义       | 例   |
-| ---------- | ---------- | ---- |
+| ------------ | ------------ | ------ |
 | include    | 包含字符串 | hlae |
 | exclude    | 排除字符串 |      |
 | start      | 开头字符串 |      |
@@ -179,8 +181,9 @@ filter用`&`分隔的过滤器各个部分，**必须&开头**，格式为 &`inc
 
 > 仓库简称后的API与repo一致，区别在使用KV存储的信息（仓库主、仓库名、filter等）简化API。
 
+
 | API                             | 含义                                                         |
-| ------------------------------- | ------------------------------------------------------------ |
+| --------------------------------- | -------------------------------------------------------------- |
 | /get/`仓库简称`                 | 获取该仓库的最新版本的唯一附件                               |
 | /get/`仓库简称`/version         | 获取该仓库的最新版本的版本号                                 |
 | /get/`仓库简称`/source          | 获取该仓库的最新版本的源代码下载地址                         |
@@ -194,8 +197,9 @@ filter用`&`分隔的过滤器各个部分，**必须&开头**，格式为 &`inc
 
 至于KV里如何存`简称-全称`的对应关系：
 
+
 | 键     | 类型   | 含义                   | 例                                                       |
-| ------ | ------ | ---------------------- | -------------------------------------------------------- |
+| -------- | -------- | ------------------------ | ---------------------------------------------------------- |
 | repo   | string | 仓库主/仓库名          | advancedfx/advancedfx                                    |
 | filter | string | 附件名过滤器           | &hlae&&&.zip                                             |
 | info   | object | KV键值对信息（多语言） | {"zh_CN": "hlae的zip安装包", "zh_TW": "hlae的zip安裝器"} |
@@ -217,8 +221,9 @@ filter用`&`分隔的过滤器各个部分，**必须&开头**，格式为 &`inc
 
 ### /bucket （未完成）
 
+
 | API示例              | 含义               |
-| -------------------- | ------------------ |
+| ---------------------- | -------------------- |
 | /bucket              | 获取所有bucket信息 |
 | /bucket/hlae         | 获取hlae最新安装包 |
 | /bucket/hlae/version |                    |
@@ -227,4 +232,3 @@ filter用`&`分隔的过滤器各个部分，**必须&开头**，格式为 &`inc
 | /get/hlae            |                    |
 
 ### /submit（未完成）
-
